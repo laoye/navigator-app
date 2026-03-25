@@ -10634,10 +10634,10 @@ react-native-maps@1.26.0:
   dependencies:
     "@types/geojson" "^7946.0.13"
 
-react-native-mmkv-storage@^0.11.0:
-  version "0.11.2"
-  resolved "https://registry.yarnpkg.com/react-native-mmkv-storage/-/react-native-mmkv-storage-0.11.2.tgz#29d838ed31e9ead660a90de16d8ac2c2fd83e48c"
-  integrity sha512-/jbYNOUrwgVU09WyXDK6lFGXqBs+23oR9X37z3N68rwHNiXF5WDyXnT38dU2tF07ZlvmsobNHgdxgTu4kGQUKQ==
+react-native-mmkv-storage@12.0.1:
+  version "12.0.1"
+  resolved "https://registry.npmjs.org/react-native-mmkv-storage/-/react-native-mmkv-storage-12.0.1.tgz#8a7649faac0f47c0ec2866e22dca844260454db1"
+  integrity sha512-4I4NzjStuCqkeXGfJ7pcACNQ2FlZKlAQqeRvI80iZL7mQcaO5NMO26ILUk2f4LPEvxaT2ns+NcqPMZSj7L83ng==
 
 react-native-notifications@^5.1.0:
   version "5.2.2"
