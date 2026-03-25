@@ -82,8 +82,8 @@ const OrderScreen = ({ route }) => {
     const { trackerData } = useOrderResource(memoizedOrder, { loadEta: false });
     const distanceLoadedRef = useRef(false);
     const isUpdatingActivity = useRef(false);
-    const listenerRef = useRef();
-    const activitySheetRef = useRef();
+    const listenerRef = useRef(null);
+    const activitySheetRef = useRef(null);
     const isAdhoc = order.getAttribute('adhoc') === true;
     const isIncomingAdhoc = isAdhoc && order.getAttribute('driver_assigned') === null;
     const isDriverAssigned = order.getAttribute('driver_assigned') !== null;

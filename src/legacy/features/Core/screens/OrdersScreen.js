@@ -20,7 +20,7 @@ const REFRESH_ORDERS_MS = 6000 * 10; // 10 mins
 const OrdersScreen = ({ navigation }) => {
     const isMounted = useMountedState();
     const fleetbase = useFleetbase();
-    const calendar = useRef();
+    const calendar = useRef(null);
     const [driver, setDriver] = useDriver();
     const [date, setDateValue] = useState(new Date());
     const [params, setParams] = useState({

@@ -6,8 +6,8 @@ import useEventBuffer from '../hooks/use-event-buffer';
 import { getCoordinates } from '../utils/location';
 
 const VehicleMarker = ({ vehicle, onPositionChange, onHeadingChange, onMovement, ...props }) => {
-    const markerRef = useRef();
-    const listenerRef = useRef();
+    const markerRef = useRef(null);
+    const listenerRef = useRef(null);
     const handleEvent = useCallback((data) => {
         console.log('Incoming data:', data);
         const movementData = { data };

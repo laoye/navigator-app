@@ -13,7 +13,7 @@ const isAndroid = Platform.OS === 'android';
 const SearchScreen = ({ navigation }) => {
     const fleetbase = useFleetbase();
     const isMounted = useMountedState();
-    const searchInput = useRef();
+    const searchInput = useRef(null);
     const [driver] = useDriver();
     const [locale] = useLocale();
 

@@ -26,7 +26,7 @@ const ProofOfDeliveryScreen = ({ route }) => {
     const { screenWidth, screenHeight } = useDimensions();
     const [isLoading, setIsLoading] = useState(false);
     const [loadingOverlayMessage, setLoadingOverlayMessage] = useState('Capturing Proof of Delivery...');
-    const signatureScreenRef = useRef();
+    const signatureScreenRef = useRef(null);
     const params = route.params ?? {};
     const activity = params.activity;
     const order = new Order(params.order, adapter);

@@ -18,8 +18,8 @@ const ChatChannelScreen = ({ route }) => {
     const navigation = useNavigation();
     const { currentChannel: channel, setCurrentChannel: setChannel, sendMessage, reloadCurrentChannel, getChannelCurrentParticipant } = useChat();
     const { listen } = useSocketClusterClient();
-    const chatFeedRef = useRef();
-    const listenerRef = useRef();
+    const chatFeedRef = useRef(null);
+    const listenerRef = useRef(null);
     const channelReloadedRef = useRef(false);
 
     const addFeedItem = useCallback((item, type = 'message') => {

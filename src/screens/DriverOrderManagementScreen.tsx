@@ -43,8 +43,8 @@ const REFRESH_ORDERS_MS = 6000 * 15; // 15 mins
 const DriverOrderManagementScreen = () => {
     const theme = useTheme();
     const navigation = useNavigation();
-    const calendar = useRef();
-    const listenerRef = useRef();
+    const calendar = useRef(null);
+    const listenerRef = useRef(null);
     const { isDarkMode } = useAppTheme();
     const { driver } = useAuth();
     const {

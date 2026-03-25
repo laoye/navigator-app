@@ -21,7 +21,7 @@ const Search = ({ network, wrapperStyle, buttonTitle, buttonStyle, buttonIcon, b
     const insets = useSafeAreaInsets();
     const fleetbase = useFleetbase();
     const isMounted = useMountedState();
-    const searchInput = useRef();
+    const searchInput = useRef(null);
 
     const [locale] = useLocale();
     const [isDialogOpen, setIsDialogOpen] = useState(false);

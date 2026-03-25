@@ -5,8 +5,8 @@ import useSocketClusterClient from '../hooks/use-socket-cluster-client';
 import useEventBuffer from '../hooks/use-event-buffer';
 
 const DriverMarker = ({ driver, onPositionChange, onHeadingChange, onMovement, ...props }) => {
-    const markerRef = useRef();
-    const listenerRef = useRef();
+    const markerRef = useRef(null);
+    const listenerRef = useRef(null);
     const handleEvent = useCallback((data) => {
         console.log('Incoming data:', data);
         const movementData = { data };

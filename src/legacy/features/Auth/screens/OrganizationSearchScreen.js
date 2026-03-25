@@ -11,7 +11,7 @@ const isAndroid = Platform.OS === 'android';
 
 const OrganizationSearchScreen = ({ navigation }) => {
     const fleetbase = useFleetbase();
-    const searchInput = useRef();
+    const searchInput = useRef(null);
     const [isLoading, setIsLoading] = useState(false);
     const [results, setResults] = useState([]);
     const [organizations, setOrganizations] = useState([]);

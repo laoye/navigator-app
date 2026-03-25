@@ -18,7 +18,7 @@ const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 const RoutesScreen = ({ navigation }) => {
     const isMounted = useMountedState();
     const fleetbase = useFleetbase();
-    const map = useRef();
+    const map = useRef(null);
     const [driver] = useDriver();
 
     const [date, setDateValue] = useState(new Date());

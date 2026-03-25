@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
         phone: null,
     });
     const organizationsLoadedRef = useRef(false);
-    const loadOrganizationsPromiseRef = useRef();
+    const loadOrganizationsPromiseRef = useRef(null);
 
     // Restore session on app load
     useEffect(() => {

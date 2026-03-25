@@ -22,7 +22,7 @@ const ChatParticipantsScreen = ({ route }) => {
     const { listen } = useSocketClusterClient();
     const [channel, setChannel] = useState(route.params.channel);
     const [availableParticipants, setAvailableParticipants] = useState([]);
-    const availableParticipantSheetRef = useRef();
+    const availableParticipantSheetRef = useRef(null);
     const availableParticipantsLoadedRef = useRef(false);
     const currentParticipant = getChannelCurrentParticipant(channel);
     const canRemoveParticipants = useMemo(() => {

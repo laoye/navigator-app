@@ -3,7 +3,6 @@ module.exports = {
     plugins: [
         'preval',
         'react-native-reanimated/plugin',
-        '@babel/plugin-proposal-export-namespace-from',
         [
             '@tamagui/babel-plugin',
             {

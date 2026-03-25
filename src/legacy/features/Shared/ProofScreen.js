@@ -16,8 +16,8 @@ const { width, height } = Dimensions.get('window');
 const ProofScreen = ({ navigation, route }) => {
     const { _order, _waypoint, _entity, activity } = route.params;
 
-    const signatureScreenRef = useRef();
-    const qrCodeScannerRef = useRef();
+    const signatureScreenRef = useRef(null);
+    const qrCodeScannerRef = useRef(null);
     const fleetbase = useFleetbase();
 
     const [order, setOrder] = useState(new Order(_order, fleetbase.getAdapter()));
