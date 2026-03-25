@@ -2,6 +2,7 @@ module.exports = {
     presets: ['module:@react-native/babel-preset'],
     plugins: [
         'preval',
+        'react-native-worklets/plugin',
         [
             '@tamagui/babel-plugin',
             {
