@@ -93,4 +93,5 @@ android/app/play-store-credentials.json
 navigator.config.js
 .tamagui
 vendor
-*.pxd
+*.pxdandroid/app/.cxx/
+android/app/build/
