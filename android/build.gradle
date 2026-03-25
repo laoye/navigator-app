@@ -7,8 +7,8 @@ buildscript {
         firebaseVersion = "22.0.0"
         buildToolsVersion = "35.0.0"
         minSdkVersion = 24
-        compileSdkVersion = 35
-        targetSdkVersion = 35
+        compileSdkVersion = 36
+        targetSdkVersion = 36
         ndkVersion = "27.1.12297006"
         kotlinVersion = "2.1.20"
         appCompatVersion = "1.4.2"
@@ -23,26 +23,47 @@ buildscript {
         mavenCentral()
 
         maven {
-            url "https://jitpack.io" // Or the correct repository URL for Flipper
+            url "https://jitpack.io"
         }
     }
     dependencies {
         classpath("com.android.tools.build:gradle:8.12.0")
-        classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.20")
         classpath('com.google.gms:google-services:4.4.2')
-//        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
     }
 }
 
-allprojects { 
+plugins {
+    id("com.facebook.react.rootproject")
+}
+
+allprojects {
+    // Force all subprojects to use the root project's AGP version
+    // This prevents old libraries (e.g. @react-native-community/blur)
+    // from pulling in outdated AGP versions like 3.5.3
+    buildscript {
+        repositories {
+            google()
+            mavenCentral()
+        }
+        dependencies {
+            classpath("com.android.tools.build:gradle:${rootProject.ext.has('agpVersion') ? rootProject.ext.agpVersion : '8.12.0'}")
+        }
+    }
+
     repositories {
+        // 阿里云镜像（优先）
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        // 腾讯云镜像（备用）
+        maven { url 'https://mirrors.cloud.tencent.com/nexus/repository/maven-public/' }
+        google()
+        mavenCentral()
         // Required for react-native-background-geolocation
         maven { url("${project(':react-native-background-geolocation').projectDir}/libs") }
         maven { url 'https://developer.huawei.com/repo/' }
         // Required for react-native-background-fetch
         maven { url("${project(':react-native-background-fetch').projectDir}/libs") }
+        maven { url "https://jitpack.io" }
     }
 }
-
-apply plugin: "com.facebook.react.rootproject"
