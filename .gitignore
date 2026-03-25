@@ -93,5 +93,11 @@ android/app/play-store-credentials.json
 navigator.config.js
 .tamagui
 vendor
-*.pxdandroid/app/.cxx/
+*.pxd
+
+# Android build artifacts
+android/app/.cxx/
 android/app/build/
+
+# Claude Code
+.claude/
