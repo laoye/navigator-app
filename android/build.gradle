@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     ext {
-        googlePlayServicesVersion = "+"
+        googlePlayServicesVersion = "21.0.1"
         playServicesLocationVersion = "21.0.1"
         firebaseMessagingVersion = "22.0.0"
         firebaseVersion = "22.0.0"
@@ -14,6 +14,11 @@ buildscript {
         appCompatVersion = "1.4.2"
     }
     repositories {
+        // 阿里云镜像（优先）
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        // 腾讯云镜像（备用）
+        maven { url 'https://mirrors.cloud.tencent.com/nexus/repository/maven-public/' }
         google()
         mavenCentral()
 
@@ -22,11 +27,11 @@ buildscript {
         }
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:3.5.4")
+        classpath("com.android.tools.build:gradle:8.7.2")
         classpath("com.facebook.react:react-native-gradle-plugin")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0")
-        classpath('com.google.gms:google-services:4.3.15')
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.21")
+        classpath('com.google.gms:google-services:4.4.2')
+//        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
     }
 }
 
