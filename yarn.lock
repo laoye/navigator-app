@@ -2760,10 +2760,10 @@
   dependencies:
     invariant "^2.2.4"
 
-"@react-native-google-signin/google-signin@latest":
-  version "16.1.1"
-  resolved "https://registry.yarnpkg.com/@react-native-google-signin/google-signin/-/google-signin-16.1.1.tgz#40b9f8458a09cf8933132efd8a68f0a573167e92"
-  integrity sha512-lcHBnZ7uvCJiWtGooKOklo/4okqszWvJ0BatW1UaIe+ynmpVpp1lyJkvv1Mj08d39k4soaWuhZVNKjD/RFL34Q==
+"@react-native-google-signin/google-signin@16.1.2":
+  version "16.1.2"
+  resolved "https://registry.npmjs.org/@react-native-google-signin/google-signin/-/google-signin-16.1.2.tgz#fe22dd4672f6fd1559e6a3fc27811ab5359de2ba"
+  integrity sha512-1hf4pRmpnS5t0dHtqU72Q1FmWzsCZR2Sm3uVQbbfMKeNPl5TKjpAsP6F8QTZ9L+Q6Cnn9tL9BXpDCb1nyutdCQ==
 
 "@react-native/assets-registry@0.84.1":
   version "0.84.1"
@@ -10512,10 +10512,10 @@ react-native-fs@^2.20.0:
     base-64 "^0.1.0"
     utf8 "^3.0.0"
 
-react-native-gesture-handler@2.25.0:
-  version "2.25.0"
-  resolved "https://registry.npmjs.org/react-native-gesture-handler/-/react-native-gesture-handler-2.25.0.tgz#3a5a8912ea4f5e68ab211a9fa5a191c08ad50883"
-  integrity sha512-NPjJi6mislXxvjxQPU9IYwBjb1Uejp8GvAbE1Lhh+xMIMEvmgAvVIp5cz1P+xAbV6uYcRRArm278+tEInGOqWg==
+react-native-gesture-handler@2.30.0:
+  version "2.30.0"
+  resolved "https://registry.npmjs.org/react-native-gesture-handler/-/react-native-gesture-handler-2.30.0.tgz#990c621fbeeefde853ececdcab7cbe1b621dbb8b"
+  integrity sha512-5YsnKHGa0X9C8lb5oCnKm0fLUPM6CRduvUUw2Bav4RIj/C3HcFh4RIUnF8wgG6JQWCL1//gRx4v+LVWgcIQdGA==
   dependencies:
     "@egjs/hammerjs" "^2.0.17"
     hoist-non-react-statics "^3.3.0"
@@ -10568,10 +10568,10 @@ react-native-maps-directions@^1.9.0:
     lodash.isequal "^4.5.0"
     prop-types "^15.6.0"
 
-react-native-maps@1.26.0:
-  version "1.26.0"
-  resolved "https://registry.yarnpkg.com/react-native-maps/-/react-native-maps-1.26.0.tgz#34622df208ca9be63d81d448da68752d3467e89f"
-  integrity sha512-TmQbkJeh52INqY0oCwl4o1O9qerc4YdyPfTCcnn41aFAs28ZYjG4QAXcVDALXclRFz6eqog3+zgeU7eJ2YVJ+Q==
+react-native-maps@1.27.2:
+  version "1.27.2"
+  resolved "https://registry.npmjs.org/react-native-maps/-/react-native-maps-1.27.2.tgz#93cd5a79ea3d6f67b145797022beb149cffcc01a"
+  integrity sha512-VKr+xZ2RZGHHJlY6KhlafvGSmK0dq/tUu5uhfJ7K9rwN5pUdubdugzMKGDU/16lXmQSg7xbClKhRctj3Pm5F5g==
   dependencies:
     "@types/geojson" "^7946.0.13"
 
@@ -10608,13 +10608,12 @@ react-native-safe-area-context@^5.0.0:
   resolved "https://registry.yarnpkg.com/react-native-safe-area-context/-/react-native-safe-area-context-5.6.2.tgz#283e006f5b434fb247fcb4be0971ad7473d5c560"
   integrity sha512-4XGqMNj5qjUTYywJqpdWZ9IG8jgkS3h06sfVjfw5yZQZfWnRFXczi0GnYyFyCc2EBps/qFmoCH8fez//WumdVg==
 
-react-native-screens@4.13.0:
-  version "4.13.0"
-  resolved "https://registry.yarnpkg.com/react-native-screens/-/react-native-screens-4.13.0.tgz#4e29bf6663fe7245c02071b96456a7ae6df23888"
-  integrity sha512-WB0QeaevdfV+MR+CMh4BgL9ryYDK2Ia20Sk2dpM/3jKVqfN52l6wbk1Zo/wTHrwaR1UjK8zQjc6jRgdZFhW+mw==
+react-native-screens@4.24.0:
+  version "4.24.0"
+  resolved "https://registry.npmjs.org/react-native-screens/-/react-native-screens-4.24.0.tgz#dbe8f610b5d2e31f71425d2ea3caaff1b9a7e2de"
+  integrity sha512-SyoiGaDofiyGPFrUkn1oGsAzkRuX1JUvTD9YQQK3G1JGQ5VWkvHgYSsc1K9OrLsDQxN7NmV71O0sHCAh8cBetA==
   dependencies:
     react-freeze "^1.0.0"
-    react-native-is-edge-to-edge "^1.2.1"
     warn-once "^0.1.0"
 
 react-native-share@^12.0.9:
@@ -10632,10 +10631,10 @@ react-native-super-grid@^6.0.1:
   resolved "https://registry.yarnpkg.com/react-native-super-grid/-/react-native-super-grid-6.0.2.tgz#05a176fce5dbb1d9d016b090d785bb559281a03a"
   integrity sha512-hLhJtmlYgdRezcmdkPdGBFPfOL9UzRvimmffAXtGQ8wwSGpF1AmJxbvYkv8pqMA+jlnTv928rjOeaNDWG6BVow==
 
-react-native-svg@15.12.0:
-  version "15.12.0"
-  resolved "https://registry.yarnpkg.com/react-native-svg/-/react-native-svg-15.12.0.tgz#0e2d476961e8b07f8c549fe4489c99b5130dc150"
-  integrity sha512-iE25PxIJ6V0C6krReLquVw6R0QTsRTmEQc4K2Co3P6zsimU/jltcDBKYDy1h/5j9S/fqmMeXnpM+9LEWKJKI6A==
+react-native-svg@15.15.3:
+  version "15.15.3"
+  resolved "https://registry.npmjs.org/react-native-svg/-/react-native-svg-15.15.3.tgz#48baf15ad9610be816b37c03ffbb1f72c056a2b0"
+  integrity sha512-/k4KYwPBLGcx2f5d4FjE+vCScK7QOX14cl2lIASJ28u4slHHtIhL0SZKU7u9qmRBHxTCKPoPBtN6haT1NENJNA==
   dependencies:
     css-select "^5.1.0"
     css-tree "^1.1.3"
