@@ -1,9 +1,15 @@
-import { MMKVLoader, useMMKVStorage } from 'react-native-mmkv-storage';
+import { MMKV } from 'react-native-mmkv';
 
-const storage = new MMKVLoader().initialize();
+const storage = new MMKV();
 
 export function get(key) {
-    return storage.getMap(key);
+    const value = storage.getString(key);
+    if (value === undefined) return undefined;
+    try {
+        return JSON.parse(value);
+    } catch {
+        return value;
+    }
 }
 
 export function getString(key) {
@@ -11,51 +17,57 @@ export function getString(key) {
 }
 
 export function getInt(key) {
-    return storage.getInt(key);
+    return storage.getNumber(key);
 }
 
 export function getBool(key) {
-    return storage.getBool(key);
+    return storage.getBoolean(key);
 }
 
 export function getArray(key) {
-    return storage.getArray(key);
+    const value = storage.getString(key);
+    if (value === undefined) return undefined;
+    try {
+        return JSON.parse(value);
+    } catch {
+        return undefined;
+    }
 }
 
 export function getMap(key) {
-    return storage.getMap(key);
+    return get(key);
 }
 
 export function set(key, value) {
-    return storage.setMap(key, value);
+    storage.set(key, JSON.stringify(value));
 }
 
 export function setString(key, value) {
-    return storage.setString(key);
+    storage.set(key, value);
 }
 
 export function setInt(key, value) {
-    return storage.setInt(key);
+    storage.set(key, value);
 }
 
 export function setBool(key, value) {
-    return storage.setBool(key);
+    storage.set(key, value);
 }
 
 export function setArray(key, value) {
-    return storage.setArray(key);
+    storage.set(key, JSON.stringify(value));
 }
 
 export function setMap(key, value) {
-    return storage.setMap(key);
+    set(key, value);
 }
 
 export function remove(key) {
-    return storage.removeItem(key);
+    storage.delete(key);
 }
 
 export function clear() {
-    return storage.clearStore();
+    storage.clearAll();
 }
 
 export default storage;

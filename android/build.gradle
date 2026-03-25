@@ -67,3 +67,15 @@ allprojects {
         maven { url "https://jitpack.io" }
     }
 }
+
+// Fix react-native-i18n: uses deprecated compile() and missing namespace
+subprojects { subproject ->
+    if (subproject.name == 'react-native-i18n') {
+        subproject.afterEvaluate {
+            def android = subproject.extensions.findByName('android')
+            if (android != null && (android.namespace == null || android.namespace.isEmpty())) {
+                android.namespace = "com.AlexanderZaytsev.RNI18n"
+            }
+        }
+    }
+}

@@ -1,10 +1,69 @@
-import { create, useMMKVStorage, MMKVLoader } from 'react-native-mmkv-storage';
+import { MMKV } from 'react-native-mmkv';
+import { useCallback, useSyncExternalStore } from 'react';
 import { Collection } from '@fleetbase/sdk';
 import { isArray, isVoid } from './Helper';
 
-const storage = new MMKVLoader().initialize();
-const useStorage = create(storage);
-const { getString, setString, getInt, setInt, getBool, setBool, getArray, setArray } = storage;
+const storage = new MMKV();
+
+// Replacement for useMMKVStorage hook
+function useMMKVStorage(key, _storage, defaultValue) {
+    const subscribe = useCallback(
+        (callback) => {
+            const listener = storage.addOnValueChangedListener((changedKey) => {
+                if (changedKey === key) callback();
+            });
+            return () => listener.remove();
+        },
+        [key]
+    );
+
+    const getSnapshot = useCallback(() => {
+        const value = storage.getString(key);
+        if (value === undefined) return defaultValue;
+        try {
+            return JSON.parse(value);
+        } catch {
+            return value;
+        }
+    }, [key, defaultValue]);
+
+    const currentValue = useSyncExternalStore(subscribe, getSnapshot);
+
+    const setValue = useCallback(
+        (value) => {
+            if (value === undefined || value === null) {
+                storage.delete(key);
+            } else {
+                storage.set(key, JSON.stringify(value));
+            }
+        },
+        [key]
+    );
+
+    return [currentValue, setValue];
+}
+
+// Replacement for create() hook factory
+function useStorage(key, defaultValue) {
+    return useMMKVStorage(key, storage, defaultValue);
+}
+
+const getString = (key) => storage.getString(key);
+const setString = (key, value) => storage.set(key, value);
+const getInt = (key) => storage.getNumber(key);
+const setInt = (key, value) => storage.set(key, value);
+const getBool = (key) => storage.getBoolean(key);
+const setBool = (key, value) => storage.set(key, value);
+const getArray = (key) => {
+    const value = storage.getString(key);
+    if (value === undefined) return undefined;
+    try {
+        return JSON.parse(value);
+    } catch {
+        return undefined;
+    }
+};
+const setArray = (key, value) => storage.set(key, JSON.stringify(value));
 
 /**
  * Storage utility functions.
@@ -13,28 +72,10 @@ const { getString, setString, getInt, setInt, getBool, setBool, getArray, setArr
  * @class StorageUtil
  */
 export default class StorageUtil {
-    /**
-     * Returns the initialized storage session from mmkv.
-     *
-     * @static
-     * @return {MMKVStorage}
-     * @memberof StorageUtil
-     */
     static instance() {
         return storage;
     }
 
-    /**
-     * Provides a hook for storing sdk resources in storage.
-     *
-     * @static
-     * @param {string} key
-     * @param {class} ResourceType
-     * @param {Adapter} adapter
-     * @param {*} defaultValue
-     * @return {array}
-     * @memberof StorageUtil
-     */
     static useResourceStorage(key, ResourceType, adapter, defaultValue) {
         const [value, setValue] = useStorage(key, defaultValue);
 
@@ -67,17 +108,6 @@ export default class StorageUtil {
         return [value, setResource];
     }
 
-    /**
-     * Provides a hook for storing a collection of sdk resources in storage.
-     *
-     * @static
-     * @param {string} key
-     * @param {class} ResourceType
-     * @param {Adapter} adapter
-     * @param {*} defaultValue
-     * @return {array}
-     * @memberof StorageUtil
-     */
     static useResourceCollection(key, resource, adapter, defaultValue = new Collection()) {
         const [value, setCollection] = useStorage(key, defaultValue);
 
@@ -107,7 +137,7 @@ export default class StorageUtil {
 
         const setResource = (resource) => {
             if (typeof value === 'string') {
-                storage.removeItem(key);
+                storage.delete(key);
             }
 
             if (!isArray(resource)) {
@@ -132,64 +162,30 @@ export default class StorageUtil {
         return [toCollection(value, resource), setResource];
     }
 
-    /**
-     * Checks if object is storage state object from mmkv.
-     *
-     * @static
-     * @param {object} obj
-     * @return {boolean}
-     * @memberof StorageUtil
-     */
     static isStorageObject(obj) {
         return typeof obj === 'object' && typeof obj?.instanceID === 'string' && typeof obj?.setMap === 'function';
     }
 
-    /**
-     * Sets an element to storage.
-     *
-     * @static
-     * @param {string} key
-     * @param {*} value
-     * @return {void}
-     * @memberof StorageUtil
-     */
     static set(key, value) {
-        return storage.setMap(key, value);
+        storage.set(key, JSON.stringify(value));
     }
 
-    /**
-     * Retrieves an element from storage.
-     *
-     * @static
-     * @param {string} key
-     * @return {*}
-     * @memberof StorageUtil
-     */
     static get(key) {
-        return storage.getMap(key);
+        const value = storage.getString(key);
+        if (value === undefined) return undefined;
+        try {
+            return JSON.parse(value);
+        } catch {
+            return value;
+        }
     }
 
-    /**
-     * Removes an item from storage.
-     *
-     * @static
-     * @param {string} key
-     * @return {*}
-     * @memberof StorageUtil
-     */
     static remove(key) {
-        return storage.removeItem(key);
+        storage.delete(key);
     }
 
-    /**
-     * Clears all items from storage.
-     *
-     * @static
-     * @return {void}
-     * @memberof StorageUtil
-     */
     static clear() {
-        return storage.clearStore();
+        storage.clearAll();
     }
 }
 
