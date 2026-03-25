@@ -5134,9 +5134,9 @@ acorn@^8.15.0, acorn@^8.9.0:
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-8.15.0.tgz#a360898bc415edaac46c8241f6383975b930b816"
   integrity sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==
 
-ag-auth@^2.1.0:
+ag-auth@^2.1.1:
   version "2.1.1"
-  resolved "https://registry.yarnpkg.com/ag-auth/-/ag-auth-2.1.1.tgz#4a48ba6a34cf71f4cb75863da5e8bb367f07e0f7"
+  resolved "https://registry.npmjs.org/ag-auth/-/ag-auth-2.1.1.tgz#4a48ba6a34cf71f4cb75863da5e8bb367f07e0f7"
   integrity sha512-7XkzbCoW/jWpI/1wdmCCr1LXk4ucywXoORG68OzPQl/Y8/sWTMiGIU/stfnUh07kVkihn4dKelz3HJ2T6niPng==
   dependencies:
     jsonwebtoken "^9.0.2"
@@ -10477,10 +10477,10 @@ react-native-config@^1.5.3:
   resolved "https://registry.yarnpkg.com/react-native-config/-/react-native-config-1.6.1.tgz#f8428829fda74384484d773fe36820159c559159"
   integrity sha512-HvKtxr6/Tq3iMdFx5REYZsjCtPi0RxQOMCs15+DqrUPTNFtWHuEuh+zw7fJp+dmuO79YMfdtlsPWIGTHtaXwjg==
 
-react-native-device-info@^14.0.4:
-  version "14.1.1"
-  resolved "https://registry.yarnpkg.com/react-native-device-info/-/react-native-device-info-14.1.1.tgz#f50c03902f87e4a99b1c51ed85163b795f02b3ea"
-  integrity sha512-lXFpe6DJmzbQXNLWxlMHP2xuTU5gwrKAvI8dCAZuERhW9eOXSubOQIesk9lIBnsi9pI19GMrcpJEvs4ARPRYmw==
+react-native-device-info@15.0.2:
+  version "15.0.2"
+  resolved "https://registry.npmjs.org/react-native-device-info/-/react-native-device-info-15.0.2.tgz#c7de1bb6baeb07e1bab70159ad540c5705cb8dc0"
+  integrity sha512-dd71eXG2l3Cwp66IvKNadMTB8fhU3PEjyVddI97sYan+D4bgIAUmgGDhbSOFvHcGavksb2U17kiQYaDiK2WK2g==
 
 react-native-event-listeners@^1.0.7:
   version "1.0.7"
@@ -10622,10 +10622,10 @@ react-native-share@^12.0.9:
   resolved "https://registry.yarnpkg.com/react-native-share/-/react-native-share-12.2.4.tgz#4e11deb6a96605196a53924661d74c3053b0e6b4"
   integrity sha512-H9q9lXcB322jMMMQ3xAg2QFux2gznJzztcNnycK4iqL/XjDGULf/MWkdwBXUfEEhl6ydnGmhP6huRMRYiyIGng==
 
-react-native-signature-canvas@^4.7.2:
-  version "4.7.4"
-  resolved "https://registry.yarnpkg.com/react-native-signature-canvas/-/react-native-signature-canvas-4.7.4.tgz#99bcf5b490c3bb1ef04bf538577585edd4a5f47c"
-  integrity sha512-8KbZ35yS2nchunk47mQ4lz8JQyvOgLs2rOX45TzqIcFSSIsmCMvbiqLzGH0gLYNq/A5s0Xg+CupzcOfvO5pjRA==
+react-native-signature-canvas@5.0.2:
+  version "5.0.2"
+  resolved "https://registry.npmjs.org/react-native-signature-canvas/-/react-native-signature-canvas-5.0.2.tgz#33d6b4ceb9ecf8fb51f3747dc3293615713e2771"
+  integrity sha512-AYtXhuz8i5KcdOQBzbmQZGxeol9RCqYxvJGCBDTd0MJ6WiBsanjH4vH3Ft4C2MP7fYrAKyZCZPA0Ea066uEiMw==
 
 react-native-super-grid@^6.0.1:
   version "6.0.2"
@@ -11400,12 +11400,12 @@ slugify@^1.6.6:
   resolved "https://registry.yarnpkg.com/slugify/-/slugify-1.6.6.tgz#2d4ac0eacb47add6af9e04d3be79319cbcc7924b"
   integrity sha512-h+z7HKHYXj6wJU+AnS/+IH8Uh9fdcX1Lrhg1/VMdf9PwoBQXFcXiAdsy2tSK0P6gKwJLXp02r90ahUCqHk9rrw==
 
-socketcluster-client@^19.2.3:
-  version "19.2.7"
-  resolved "https://registry.yarnpkg.com/socketcluster-client/-/socketcluster-client-19.2.7.tgz#70d96a491323cc044d1171efabc3aa05023d959a"
-  integrity sha512-c6caNOr/49FUjlVnQfXb0TasMnrqY1uN/uevT99xicF+7NkvGSNwjP6rlMP0v1ZZjz+MosT2/qJNDDc2b3v/Jw==
+socketcluster-client@20.0.1:
+  version "20.0.1"
+  resolved "https://registry.npmjs.org/socketcluster-client/-/socketcluster-client-20.0.1.tgz#5e915dc21bb1684b28aa244c26b63b2a20d8b0c8"
+  integrity sha512-qJ+fr1Qxh6bGqmchnBe+6dcUaC6/9nJLgVy6uszNTmWEH3qyPpTiDM2jSHAC8kRxAR0XXfdEC1pjkhzSXyJDLw==
   dependencies:
-    ag-auth "^2.1.0"
+    ag-auth "^2.1.1"
     ag-channel "^5.0.0"
     ag-request "^1.1.0"
     async-stream-emitter "^7.0.1"
