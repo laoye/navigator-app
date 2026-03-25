@@ -124,7 +124,7 @@
         "react-test-renderer": "19.2.4",
         "style-loader": "^4.0.0",
         "tamagui-loader": "1.125.20",
-        "typescript": "5.0.4",
+        "typescript": "5.9.3",
         "url-loader": "^4.1.1",
         "webpack": "^5.97.1",
         "webpack-cli": "^6.0.0",
