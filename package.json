@@ -6,7 +6,7 @@
     "description": "Order management, geolocation tracking and navigation for Fleetbase drivers.",
     "private": true,
     "scripts": {
-        "android": "react-native run-android",
+        "android": "cd android && ./gradlew app:installDebug && cd .. && adb reverse tcp:8081 tcp:8081 && adb shell am start -n io.fleetbase.navigator/.MainActivity",
         "ios": "react-native run-ios",
         "start": "react-native start",
         "web": "webpack serve --config webpack.config.js",
