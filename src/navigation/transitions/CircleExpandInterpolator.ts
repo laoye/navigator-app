@@ -1,5 +1,5 @@
 import React from 'react';
-import { Extrapolate, interpolate, useAnimatedStyle } from 'react-native-reanimated';
+import { Extrapolation, interpolate, useAnimatedStyle } from 'react-native-reanimated';
 
 const CircleExpandInterpolator = ({ current }) => {
     const animatedStyle = useAnimatedStyle(() => {
@@ -7,7 +7,7 @@ const CircleExpandInterpolator = ({ current }) => {
             current.progress,
             [0, 1],
             [0.1, 2], // Adjust scale values to control the expand effect
-            Extrapolate.CLAMP
+            Extrapolation.CLAMP
         );
         const opacity = interpolate(current.progress, [0, 0.5, 1], [0, 0.5, 1]);
 
