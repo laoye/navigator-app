@@ -161,7 +161,7 @@ const useOAuth = () => {
         }
 
         if (provider === 'facebook') {
-            return typeof config('FACEBOOK_APP_ID') === 'string' && typeof config('FACEBOOK_CLIENT_TOKEN') === 'string';
+            return !!config('FACEBOOK_APP_ID') && !!config('FACEBOOK_CLIENT_TOKEN');
         }
     };
 

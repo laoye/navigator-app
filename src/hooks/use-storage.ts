@@ -1,11 +1,22 @@
 import { MMKV } from 'react-native-mmkv';
-import { useCallback, useSyncExternalStore } from 'react';
+import { useCallback, useRef, useSyncExternalStore } from 'react';
 
 // Initialize MMKV storage once, ensuring it's a singleton
 export const storage = new MMKV();
 
 // Main `useStorage` hook function using useSyncExternalStore for React 19 compatibility
-function useStorage<T>(key: string, defaultValue: T): [T, (value: T) => void] {
+function useStorage<T>(key: string, defaultValue?: T): [T, (value: T) => void] {
+    // Stabilize defaultValue reference to prevent useSyncExternalStore infinite loops
+    // when callers pass inline objects/arrays (e.g. useStorage('key', []))
+    const defaultValueRef = useRef(defaultValue);
+    // Cache last raw string + parsed result so getSnapshot always returns the
+    // same reference when the underlying data hasn't changed (required by React's
+    // useSyncExternalStore consistency check).
+    const snapshotCache = useRef<{ raw: string | undefined; parsed: T }>({
+        raw: undefined,
+        parsed: defaultValueRef.current as T,
+    });
+
     const subscribe = useCallback(
         (callback: () => void) => {
             const listener = storage.addOnValueChangedListener((changedKey) => {
@@ -17,14 +28,19 @@ function useStorage<T>(key: string, defaultValue: T): [T, (value: T) => void] {
     );
 
     const getSnapshot = useCallback(() => {
-        const value = storage.getString(key);
-        if (value === undefined) return defaultValue;
+        const raw = storage.getString(key);
+        if (raw === undefined) return defaultValueRef.current as T;
+        if (raw === snapshotCache.current.raw) return snapshotCache.current.parsed;
         try {
-            return JSON.parse(value) as T;
+            const parsed = JSON.parse(raw) as T;
+            snapshotCache.current = { raw, parsed };
+            return parsed;
         } catch {
-            return value as unknown as T;
+            const parsed = raw as unknown as T;
+            snapshotCache.current = { raw, parsed };
+            return parsed;
         }
-    }, [key, defaultValue]);
+    }, [key]);
 
     const currentValue = useSyncExternalStore(subscribe, getSnapshot);
 
