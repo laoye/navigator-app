@@ -1,12 +1,12 @@
 {
-    "name": "@fleetbase/navigator-app",
-    "version": "2.0.9",
+    "name": "@forboxexpress/driver-app",
+    "version": "1.0.0",
     "license": "AGPL-3.0-or-later",
-    "author": "Fleetbase Pte Ltd <hello@fleetbase.io>",
-    "description": "Order management, geolocation tracking and navigation for Fleetbase drivers.",
+    "author": "ForBox Express",
+    "description": "ForBox Driver App - Order management and delivery for ForBox Express drivers.",
     "private": true,
     "scripts": {
-        "android": "cd android && ./gradlew app:installDebug && cd .. && adb reverse tcp:8081 tcp:8081 && adb shell am start -n io.fleetbase.navigator/.MainActivity",
+        "android": "cd android && ./gradlew app:installDebug && cd .. && adb reverse tcp:8081 tcp:8081 && adb shell am start -n com.forboxexpress.driver/.MainActivity",
         "ios": "react-native run-ios",
         "start": "react-native start",
         "web": "webpack serve --config webpack.config.js",

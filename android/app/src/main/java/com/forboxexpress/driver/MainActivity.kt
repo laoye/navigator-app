@@ -1,4 +1,4 @@
-package io.fleetbase.navigator
+package com.forboxexpress.driver
 
 import android.os.Bundle
 import com.facebook.react.ReactActivity

@@ -287,7 +287,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = io.fleetbase.navigator;
+				PRODUCT_BUNDLE_IDENTIFIER = com.forboxexpress.driver;
 				PRODUCT_NAME = NavigatorApp;
 				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/NavigatorApp-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -319,7 +319,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = io.fleetbase.navigator;
+				PRODUCT_BUNDLE_IDENTIFIER = com.forboxexpress.driver;
 				PRODUCT_NAME = NavigatorApp;
 				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/NavigatorApp-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
