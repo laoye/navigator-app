@@ -45,6 +45,12 @@ import Badge from '../components/Badge';
 import Spacer from '../components/Spacer';
 import BackButton from '../components/BackButton';
 import { SectionHeader, SectionInfoLine, ActionContainer } from '../components/Content';
+import {
+    fetchOrderPodCount,
+    shouldEnforceForboxPod,
+    isPodSufficient,
+    describeShortage,
+} from '../utils/forboxPod';
 
 const getOrderDestination = (order, adapter) => {
     const pickup = order.getAttribute('payload.pickup');
@@ -318,6 +324,26 @@ const OrderScreen = ({ route }) => {
             if (activity.require_pod && !proof) {
                 activitySheetRef.current?.closeBottomSheet();
                 return navigation.navigate('ProofOfDelivery', { activity, order: order.serialize(), waypoint: destination.serialize() });
+            }
+
+            // ForBox 大件订单强制 POD 客户端拦截：picked_up / delivered 推进时
+            // 必须 >= 2 张照片 + >= 1 签字（方式 B 送仓单豁免 picked_up）。
+            // 服务端 FBOrderObserver 会再做一次 422 兜底。
+            const targetCode = activity?.code;
+            const orderType = order.getAttribute('type');
+            const inboundMethod = order.getAttribute('meta')?.inbound_method;
+            if (shouldEnforceForboxPod(orderType, targetCode, inboundMethod)) {
+                const podCount = await fetchOrderPodCount(adapter, order.id);
+                if (!isPodSufficient(podCount)) {
+                    setActivityLoading(null);
+                    activitySheetRef.current?.closeBottomSheet();
+                    toast.error(`大件 POD 不足：${describeShortage(podCount)}`);
+                    return navigation.navigate('ProofOfDelivery', {
+                        activity,
+                        order: order.serialize(),
+                        waypoint: destination?.serialize(),
+                    });
+                }
             }
 
             // Track current destination

@@ -4,6 +4,7 @@ import { Boot, LocationPermission, InstanceLink } from './stacks/CoreStack';
 import AuthStack from './stacks/AuthStack';
 import DriverNavigator from './DriverNavigator';
 import WarehouseNavigator from './WarehouseNavigator';
+import PickupChecklistScreen from '../screens/PickupChecklistScreen';
 import { useIsAuthenticated } from '../contexts/AuthContext';
 import { useIsWarehouseAuthenticated, useActiveRole } from '../contexts/WarehouseAuthContext';
 import AppLayout from '../layouts/AppLayout';
@@ -49,6 +50,12 @@ const RootStack = createNativeStackNavigator({
             if: useShouldShowWarehouseApp,
             screen: WarehouseNavigator,
             options: { headerShown: false, gestureEnabled: false, animation: 'none' },
+        },
+        // 司机端取货清单（仅 driver 登录后可达；通过 navigation.navigate('PickupChecklist') 触发）
+        PickupChecklist: {
+            if: useShouldShowDriverApp,
+            screen: PickupChecklistScreen,
+            options: { headerShown: false, presentation: 'modal' },
         },
     },
 });
