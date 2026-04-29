@@ -6,6 +6,7 @@ import { PortalProvider, PortalHost } from '@gorhom/portal';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { AuthProvider } from './src/contexts/AuthContext';
+import { WarehouseAuthProvider } from './src/contexts/WarehouseAuthContext';
 import { SocketClusterProvider } from './src/contexts/SocketClusterContext';
 import { OrderManagerProvider } from './src/contexts/OrderManagerContext';
 import { LanguageProvider } from './src/contexts/LanguageContext';
@@ -31,6 +32,7 @@ function AppContent(): React.JSX.Element {
                                 <NotificationProvider>
                                     <LanguageProvider>
                                         <AuthProvider>
+                                            <WarehouseAuthProvider>
                                             <SocketClusterProvider>
                                                 <LocationProvider>
                                                     <TempStoreProvider>
@@ -46,6 +48,7 @@ function AppContent(): React.JSX.Element {
                                                     </TempStoreProvider>
                                                 </LocationProvider>
                                             </SocketClusterProvider>
+                                            </WarehouseAuthProvider>
                                         </AuthProvider>
                                     </LanguageProvider>
                                 </NotificationProvider>
