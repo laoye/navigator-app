@@ -6,10 +6,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faCheck, faTimes, faRotateRight } from '@fortawesome/free-solid-svg-icons';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useConfig } from '../../contexts/ConfigContext';
+import { useLanguage } from '../../contexts/LanguageContext';
+import BarcodeScanner from '../../components/BarcodeScanner';
 import {
     enqueuePendingScan,
     loadPendingScans,
-    removePendingScan,
     savePendingScans,
     scanIn,
     scanOut,
@@ -37,6 +38,7 @@ interface RecentScan {
  */
 const WarehouseScanScreen = () => {
     const { resolveConnectionConfig } = useConfig();
+    const { t } = useLanguage();
     const insets = useSafeAreaInsets();
 
     const [mode, setMode] = useState<ScanMode>('scan-in');
@@ -60,68 +62,82 @@ const WarehouseScanScreen = () => {
         [resolveConnectionConfig]
     );
 
-    const handleSubmit = async () => {
-        const trimmed = code.trim();
-        if (!trimmed) return;
-        setSubmitting(true);
-        try {
-            const res = await submitScan(mode, trimmed);
-            const ok = res.status === 'ok';
-            const msg = ok
-                ? `${res.data?.tracking_number ?? trimmed} ${mode === 'scan-in' ? '已入库' : '已出库'}`
-                : res.message ?? 'failed';
+    const submitCode = useCallback(
+        async (value: string, scanMode: ScanMode) => {
+            const trimmed = value.trim();
+            if (!trimmed) return;
+            setSubmitting(true);
+            try {
+                const res = await submitScan(scanMode, trimmed);
+                const ok = res.status === 'ok';
+                const code = res.data?.tracking_number ?? trimmed;
+                const msg = ok
+                    ? t(scanMode === 'scan-in' ? 'WarehouseScanScreen.successInbound' : 'WarehouseScanScreen.successOutbound', { code })
+                    : res.message ?? t('WarehouseScanScreen.failed');
 
-            setRecents((prev) =>
-                [
-                    {
-                        id: `${Date.now()}`,
-                        code: trimmed,
-                        mode,
-                        success: ok,
-                        message: msg,
-                        at: new Date().toLocaleTimeString('zh-CN', { hour12: false }),
-                    },
-                    ...prev,
-                ].slice(0, 5)
-            );
-            if (ok) {
-                toast.success(msg);
-                setCode(''); // 成功才清空
-            } else {
+                setRecents((prev) =>
+                    [
+                        {
+                            id: `${Date.now()}`,
+                            code: trimmed,
+                            mode: scanMode,
+                            success: ok,
+                            message: msg,
+                            at: new Date().toLocaleTimeString(undefined, { hour12: false }),
+                        },
+                        ...prev,
+                    ].slice(0, 5)
+                );
+                if (ok) {
+                    toast.success(msg);
+                    setCode('');
+                } else {
+                    toast.error(msg);
+                }
+            } catch (err) {
+                const msg = err instanceof Error ? err.message : t('WarehouseScanScreen.failed');
+                const pendingItem: PendingScan = {
+                    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                    mode: scanMode,
+                    code: trimmed,
+                    queued_at: new Date().toISOString(),
+                    last_error: msg,
+                    attempts: 0,
+                };
+                enqueuePendingScan(pendingItem);
+                setPending(loadPendingScans());
+
+                setRecents((prev) =>
+                    [
+                        {
+                            id: `${Date.now()}`,
+                            code: trimmed,
+                            mode: scanMode,
+                            success: false,
+                            message: `${msg}${t('WarehouseScanScreen.queuedSuffix')}`,
+                            at: new Date().toLocaleTimeString(undefined, { hour12: false }),
+                        },
+                        ...prev,
+                    ].slice(0, 5)
+                );
                 toast.error(msg);
+            } finally {
+                setSubmitting(false);
             }
-        } catch (err) {
-            const msg = err instanceof Error ? err.message : 'failed';
-            // 入待重试队列
-            const pendingItem: PendingScan = {
-                id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-                mode,
-                code: trimmed,
-                queued_at: new Date().toISOString(),
-                last_error: msg,
-                attempts: 0,
-            };
-            enqueuePendingScan(pendingItem);
-            setPending(loadPendingScans());
+        },
+        [submitScan, t]
+    );
 
-            setRecents((prev) =>
-                [
-                    {
-                        id: `${Date.now()}`,
-                        code: trimmed,
-                        mode,
-                        success: false,
-                        message: `${msg}（已加入待重试）`,
-                        at: new Date().toLocaleTimeString('zh-CN', { hour12: false }),
-                    },
-                    ...prev,
-                ].slice(0, 5)
-            );
-            toast.error(msg);
-        } finally {
-            setSubmitting(false);
-        }
-    };
+    const handleSubmit = () => submitCode(code, mode);
+
+    const handleScanned = useCallback(
+        (value: string) => {
+            if (submitting) return;
+            setCode(value);
+            submitCode(value, mode);
+        },
+        [mode, submitCode, submitting]
+    );
 
     const handleRetryPending = async () => {
         const list = loadPendingScans();
@@ -143,21 +159,25 @@ const WarehouseScanScreen = () => {
         }
         savePendingScans(remaining);
         setPending(remaining);
-        toast.success(`重试完成：成功 ${success}，剩余 ${remaining.length}`);
+        toast.success(t('WarehouseScanScreen.retryDone', { success, remaining: remaining.length }));
     };
 
     const handleClearPending = () => {
-        Alert.alert('确认清空', `将丢弃 ${pending.length} 条待重试记录`, [
-            { text: '取消', style: 'cancel' },
-            {
-                text: '清空',
-                style: 'destructive',
-                onPress: () => {
-                    savePendingScans([]);
-                    setPending([]);
+        Alert.alert(
+            t('WarehouseScanScreen.confirmClear'),
+            t('WarehouseScanScreen.confirmClearMessage', { count: pending.length }),
+            [
+                { text: t('WarehouseScanScreen.cancel'), style: 'cancel' },
+                {
+                    text: t('WarehouseScanScreen.clear'),
+                    style: 'destructive',
+                    onPress: () => {
+                        savePendingScans([]);
+                        setPending([]);
+                    },
                 },
-            },
-        ]);
+            ]
+        );
     };
 
     return (
@@ -171,52 +191,38 @@ const WarehouseScanScreen = () => {
                 <Button
                     flex={1}
                     size='$4'
-                    bg={mode === 'scan-in' ? '$blue9' : '$backgroundStrong'}
+                    bg={mode === 'scan-in' ? '$blue-600' : '$backgroundStrong'}
                     borderColor='$borderColor'
                     borderWidth={1}
                     onPress={() => setMode('scan-in')}
                 >
                     <Text color={mode === 'scan-in' ? 'white' : '$textPrimary'} fontWeight='700'>
-                        入库
+                        {t('WarehouseScanScreen.scanIn')}
                     </Text>
                 </Button>
                 <Button
                     flex={1}
                     size='$4'
-                    bg={mode === 'scan-out' ? '$amber9' : '$backgroundStrong'}
+                    bg={mode === 'scan-out' ? '$orange-500' : '$backgroundStrong'}
                     borderColor='$borderColor'
                     borderWidth={1}
                     onPress={() => setMode('scan-out')}
                 >
                     <Text color={mode === 'scan-out' ? 'white' : '$textPrimary'} fontWeight='700'>
-                        出库
+                        {t('WarehouseScanScreen.scanOut')}
                     </Text>
                 </Button>
             </XStack>
 
-            {/* 摄像头预览占位（待接入 vision-camera） */}
-            <YStack
-                height={200}
-                bg='$backgroundStrong'
-                borderRadius='$4'
-                borderWidth={1}
-                borderColor='$borderColor'
-                alignItems='center'
-                justifyContent='center'
-                mb='$4'
-            >
-                <Text color='$textSecondary' fontSize='$3'>
-                    摄像头扫码（待接入）
-                </Text>
-                <Text color='$textSecondary' fontSize='$2' mt='$1'>
-                    暂时请在下方手动输入运单号
-                </Text>
+            {/* 摄像头扫码 */}
+            <YStack mb='$4'>
+                <BarcodeScanner height={220} enabled={!submitting} onScanned={handleScanned} />
             </YStack>
 
             {/* 手动输入 + 提交 */}
             <YStack space='$2' mb='$4'>
                 <Text fontSize='$3' color='$textSecondary'>
-                    运单号
+                    {t('WarehouseScanScreen.trackingNumber')}
                 </Text>
                 <Input
                     size='$4'
@@ -224,18 +230,22 @@ const WarehouseScanScreen = () => {
                     onChangeText={setCode}
                     autoCapitalize='characters'
                     autoCorrect={false}
-                    placeholder='FB20260429001'
+                    placeholder={t('WarehouseScanScreen.trackingPlaceholder')}
                     editable={!submitting}
                 />
                 <Button
                     size='$4'
                     onPress={handleSubmit}
                     disabled={submitting || !code.trim()}
-                    bg={mode === 'scan-in' ? '$blue9' : '$amber9'}
+                    bg={mode === 'scan-in' ? '$blue-600' : '$orange-500'}
                     pressStyle={{ opacity: 0.9 }}
                 >
                     <Text color='white' fontWeight='700'>
-                        {submitting ? '提交中…' : mode === 'scan-in' ? '确认入库' : '确认出库'}
+                        {submitting
+                            ? t('WarehouseScanScreen.submitting')
+                            : mode === 'scan-in'
+                                ? t('WarehouseScanScreen.confirmScanIn')
+                                : t('WarehouseScanScreen.confirmScanOut')}
                     </Text>
                 </Button>
             </YStack>
@@ -244,7 +254,7 @@ const WarehouseScanScreen = () => {
             {recents.length > 0 && (
                 <YStack mb='$4'>
                     <Text mb='$2' fontSize='$3' fontWeight='600' color='$textSecondary'>
-                        最近操作
+                        {t('WarehouseScanScreen.recentOperations')}
                     </Text>
                     <YStack space='$2'>
                         {recents.map((r) => (
@@ -267,7 +277,7 @@ const WarehouseScanScreen = () => {
                                         {r.code}
                                     </Text>
                                     <Text fontSize='$2' color='$textSecondary'>
-                                        {r.mode === 'scan-in' ? '入库' : '出库'} · {r.at} · {r.message}
+                                        {r.mode === 'scan-in' ? t('WarehouseScanScreen.inbound') : t('WarehouseScanScreen.outbound')} · {r.at} · {r.message}
                                     </Text>
                                 </YStack>
                             </XStack>
@@ -280,34 +290,38 @@ const WarehouseScanScreen = () => {
             {pending.length > 0 && (
                 <YStack
                     p='$3'
-                    bg='$amber3'
+                    bg='$orange-100'
                     borderRadius='$3'
                     borderWidth={1}
-                    borderColor='$amber7'
+                    borderColor='$orange-300'
                     space='$2'
                 >
-                    <Text color='$amber11' fontWeight='700'>
-                        待重试 {pending.length} 条
+                    <Text color='$orange-700' fontWeight='700'>
+                        {t('WarehouseScanScreen.pendingCount', { count: pending.length })}
                     </Text>
                     {pending.slice(0, 5).map((p) => (
                         <Text key={p.id} fontSize='$2' color='$textSecondary'>
-                            {p.code}（{p.mode === 'scan-in' ? '入库' : '出库'}，已尝试 {p.attempts} 次）
+                            {t('WarehouseScanScreen.queueAttempts', {
+                                code: p.code,
+                                mode: p.mode === 'scan-in' ? t('WarehouseScanScreen.inbound') : t('WarehouseScanScreen.outbound'),
+                                attempts: p.attempts,
+                            })}
                         </Text>
                     ))}
                     <XStack space='$2' mt='$1'>
                         <Button
                             size='$3'
                             flex={1}
-                            bg='$amber9'
+                            bg='$orange-500'
                             onPress={handleRetryPending}
                             icon={<FontAwesomeIcon icon={faRotateRight} color='white' size={12} />}
                         >
                             <Text color='white' fontWeight='600'>
-                                重试全部
+                                {t('WarehouseScanScreen.retryAll')}
                             </Text>
                         </Button>
                         <Button size='$3' flex={1} bg='$backgroundStrong' onPress={handleClearPending}>
-                            <Text color='$textPrimary'>清空</Text>
+                            <Text color='$textPrimary'>{t('WarehouseScanScreen.clear')}</Text>
                         </Button>
                     </XStack>
                 </YStack>

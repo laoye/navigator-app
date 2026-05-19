@@ -10,7 +10,7 @@ import { useConfig } from './ConfigContext';
  *   - staff 信息存 `_warehouse_staff`
  *   - 顶层 `_active_role` 决定 AppNavigator 渲染哪个 Navigator
  *
- * 调用 ForBox 后端 `POST /int/v1/forbox/ops/auth/login`（OpsStaff 体系），
+ * 调用 ForBox 后端 `POST /forbox/int/v1/forbox/ops/auth/login`（OpsStaff 体系），
  * 仅放行 role=warehouse 或 admin 的账号；operations 角色不开放给 App。
  */
 
@@ -48,7 +48,7 @@ export const WarehouseAuthProvider = ({ children }: { children: ReactNode }) => 
                 throw new Error('Fleetbase host not configured');
             }
 
-            const url = `${String(host).replace(/\/$/, '')}/int/v1/forbox/ops/auth/login`;
+            const url = `${String(host).replace(/\/$/, '')}/forbox/int/v1/forbox/ops/auth/login`;
             const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -88,7 +88,7 @@ export const WarehouseAuthProvider = ({ children }: { children: ReactNode }) => 
         const host = resolveConnectionConfig('FLEETBASE_HOST');
         // 后端 logout 是 best-effort —— 失败也不影响本地清理
         if (host && token) {
-            const url = `${String(host).replace(/\/$/, '')}/int/v1/forbox/ops/auth/logout`;
+            const url = `${String(host).replace(/\/$/, '')}/forbox/int/v1/forbox/ops/auth/logout`;
             fetch(url, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },

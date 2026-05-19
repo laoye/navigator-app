@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Input, Spinner, Text, YStack } from 'tamagui';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useWarehouseAuth } from '../contexts/WarehouseAuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 /**
  * 仓库员工登录页：邮箱 + 密码 → 调 ForBox `/int/v1/forbox/ops/auth/login`。
@@ -18,6 +19,7 @@ const WarehouseLoginScreen = () => {
     const insets = useSafeAreaInsets();
     const windowHeight = Dimensions.get('window').height;
     const { loginWarehouse, setActiveRole } = useWarehouseAuth();
+    const { t } = useLanguage();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -28,9 +30,8 @@ const WarehouseLoginScreen = () => {
         setSubmitting(true);
         try {
             await loginWarehouse(email.trim(), password);
-            toast.success('登录成功');
         } catch (err) {
-            const msg = err instanceof Error ? err.message : '登录失败';
+            const msg = err instanceof Error ? err.message : t('WarehouseLoginScreen.invalidEmailOrPassword');
             toast.error(msg);
         } finally {
             setSubmitting(false);
@@ -49,7 +50,7 @@ const WarehouseLoginScreen = () => {
                 <YStack justifyContent='center' alignItems='center' paddingTop={insets.top} marginTop={windowHeight / 8}>
                     <Image source={require('../../assets/navigator-icon-transparent.png')} style={{ width: 60, height: 60 }} />
                     <Text mt='$3' fontSize='$6' fontWeight='700' color='$textPrimary'>
-                        仓库员工登录
+                        {t('WarehouseLoginScreen.title')}
                     </Text>
                 </YStack>
 
@@ -57,7 +58,7 @@ const WarehouseLoginScreen = () => {
                     <YStack flex={1} px='$5' pt='$6' space='$3'>
                         <YStack space='$1.5'>
                             <Text fontSize='$2' color='$textSecondary'>
-                                邮箱
+                                {t('WarehouseLoginScreen.email')}
                             </Text>
                             <Input
                                 size='$4'
@@ -65,21 +66,21 @@ const WarehouseLoginScreen = () => {
                                 onChangeText={setEmail}
                                 autoCapitalize='none'
                                 keyboardType='email-address'
-                                placeholder='you@example.com'
+                                placeholder={t('WarehouseLoginScreen.emailPlaceholder')}
                                 editable={!submitting}
                             />
                         </YStack>
 
                         <YStack space='$1.5'>
                             <Text fontSize='$2' color='$textSecondary'>
-                                密码
+                                {t('WarehouseLoginScreen.password')}
                             </Text>
                             <Input
                                 size='$4'
                                 value={password}
                                 onChangeText={setPassword}
                                 secureTextEntry
-                                placeholder='••••••••'
+                                placeholder={t('WarehouseLoginScreen.passwordPlaceholder')}
                                 editable={!submitting}
                             />
                         </YStack>
@@ -88,22 +89,22 @@ const WarehouseLoginScreen = () => {
                             size='$5'
                             onPress={handleSubmit}
                             disabled={submitting || !email.trim() || !password}
-                            bg='$green9'
-                            pressStyle={{ bg: '$green10' }}
+                            bg='$green-600'
+                            pressStyle={{ bg: '$green-700' }}
                             mt='$3'
                         >
                             {submitting ? (
                                 <Spinner color='white' />
                             ) : (
                                 <Text color='white' fontSize='$5' fontWeight='700'>
-                                    登录
+                                    {t('WarehouseLoginScreen.submit')}
                                 </Text>
                             )}
                         </Button>
 
                         <Button size='$3' onPress={handleBackToRoleSelect} bg='transparent' disabled={submitting}>
                             <Text color='$textSecondary' fontSize='$3'>
-                                切换身份
+                                {t('WarehouseLoginScreen.switchRole')}
                             </Text>
                         </Button>
                     </YStack>

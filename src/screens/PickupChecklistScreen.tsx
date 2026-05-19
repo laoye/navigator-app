@@ -4,11 +4,13 @@ import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Input, Spinner, Text, XStack, YStack } from 'tamagui';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faArrowLeft, faCheck, faQrcode } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faCheck } from '@fortawesome/free-solid-svg-icons';
 import { Order } from '@fleetbase/sdk';
 import { toast } from '../utils/toast';
 import { useOrderManager } from '../contexts/OrderManagerContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import useFleetbase from '../hooks/use-fleetbase';
+import BarcodeScanner from '../components/BarcodeScanner';
 
 /**
  * 司机端"取货清单"页（§8.4.3）
@@ -38,6 +40,7 @@ const PickupChecklistScreen = () => {
     const insets = useSafeAreaInsets();
     const { adapter } = useFleetbase();
     const { allActiveOrders, reloadActiveOrders, isFetchingActiveOrders } = useOrderManager();
+    const { t } = useLanguage();
 
     const [selectedPickupKey, setSelectedPickupKey] = useState<string | null>(null);
     const [code, setCode] = useState('');
@@ -59,7 +62,7 @@ const PickupChecklistScreen = () => {
 
             const pickup = order.getAttribute('payload.pickup');
             const key = pickup?.id ?? pickup?.uuid ?? 'no-pickup';
-            const name = pickup?.name ?? pickup?.street1 ?? '未指定取货地点';
+            const name = pickup?.name ?? pickup?.street1 ?? t('PickupChecklistScreen.noPickupSpecified');
             const address = [pickup?.street1, pickup?.city, pickup?.province, pickup?.postal_code]
                 .filter(Boolean)
                 .join(', ');
@@ -93,40 +96,54 @@ const PickupChecklistScreen = () => {
         [selectedGroup]
     );
 
-    const handleSubmitScan = async () => {
-        if (!adapter) return;
-        if (!selectedGroup) return;
-        const trimmed = code.trim();
-        if (!trimmed) return;
+    const submitScan = useCallback(
+        async (raw: string) => {
+            if (!adapter) return;
+            if (!selectedGroup) return;
+            const trimmed = raw.trim();
+            if (!trimmed) return;
 
-        const matched = matchOrderByCode(trimmed);
-        if (!matched) {
-            toast.error('未在当前取货清单中找到该运单号');
-            return;
-        }
-        if (scannedOrderIds.has(matched.id)) {
-            toast.error('该运单已在本次扫码列表中');
-            return;
-        }
+            const matched = matchOrderByCode(trimmed);
+            if (!matched) {
+                toast.error(t('PickupChecklistScreen.notInChecklist'));
+                return;
+            }
+            if (scannedOrderIds.has(matched.id)) {
+                toast.error(t('PickupChecklistScreen.alreadyScanned'));
+                return;
+            }
 
-        setSubmitting(true);
-        try {
-            await adapter.post(`orders/${matched.id}/capture-qr`, { raw_data: trimmed });
-            setScannedOrderIds((prev) => new Set(prev).add(matched.id));
-            setCode('');
-            toast.success(`${trimmed} 已确认`);
-        } catch (err) {
-            const msg = err instanceof Error ? err.message : '扫码失败';
-            toast.error(msg);
-        } finally {
-            setSubmitting(false);
-        }
-    };
+            setSubmitting(true);
+            try {
+                await adapter.post(`orders/${matched.id}/capture-qr`, { raw_data: trimmed });
+                setScannedOrderIds((prev) => new Set(prev).add(matched.id));
+                setCode('');
+                toast.success(t('PickupChecklistScreen.confirmed', { code: trimmed }));
+            } catch (err) {
+                const msg = err instanceof Error ? err.message : t('WarehouseScanScreen.failed');
+                toast.error(msg);
+            } finally {
+                setSubmitting(false);
+            }
+        },
+        [adapter, selectedGroup, matchOrderByCode, scannedOrderIds]
+    );
+
+    const handleSubmitScan = () => submitScan(code);
+
+    const handleScanned = useCallback(
+        (value: string) => {
+            if (submitting) return;
+            setCode(value);
+            submitScan(value);
+        },
+        [submitScan, submitting]
+    );
 
     const handleAdvanceAll = async () => {
         if (!selectedGroup) return;
         if (scannedOrderIds.size === 0) {
-            toast.error('请先扫码确认订单');
+            toast.error(t('PickupChecklistScreen.scanFirst'));
             return;
         }
 
@@ -149,24 +166,24 @@ const PickupChecklistScreen = () => {
             }
             setAdvancing(false);
             if (failure === 0) {
-                toast.success(`已推进 ${success} 单`);
+                toast.success(t('PickupChecklistScreen.advanceDone', { count: success }));
                 setScannedOrderIds(new Set());
                 setSelectedPickupKey(null);
                 reloadActiveOrders?.();
                 navigation.goBack();
             } else {
-                toast.error(`成功 ${success} / 失败 ${failure}`);
+                toast.error(t('PickupChecklistScreen.advanceMixed', { success, failure }));
                 reloadActiveOrders?.();
             }
         };
 
         if (remaining > 0) {
             Alert.alert(
-                '部分订单未扫码',
-                `还有 ${remaining} 单未扫码，仅推进已扫码的 ${targets.length} 单？`,
+                t('PickupChecklistScreen.partialTitle'),
+                t('PickupChecklistScreen.partialMessage', { remaining, scanned: targets.length }),
                 [
-                    { text: '取消', style: 'cancel' },
-                    { text: '继续', onPress: confirmAdvance },
+                    { text: t('PickupChecklistScreen.cancel'), style: 'cancel' },
+                    { text: t('PickupChecklistScreen.continue'), onPress: confirmAdvance },
                 ]
             );
         } else {
@@ -185,11 +202,11 @@ const PickupChecklistScreen = () => {
                         icon={<FontAwesomeIcon icon={faArrowLeft} color='#888' size={16} />}
                     />
                     <Text fontSize='$6' fontWeight='800' color='$textPrimary' ml='$2'>
-                        取货清单
+                        {t('PickupChecklistScreen.title')}
                     </Text>
                 </XStack>
                 <Text px='$4' color='$textSecondary' fontSize='$3' mb='$3'>
-                    选择一个取货地点开始扫码
+                    {t('PickupChecklistScreen.subtitle')}
                 </Text>
                 <FlatList
                     contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
@@ -221,14 +238,14 @@ const PickupChecklistScreen = () => {
                                     {item.pickupAddress || '—'}
                                 </Text>
                                 <Text fontSize='$2' color='$textSecondary' mt='$1'>
-                                    {item.orders.length} 单待取
+                                    {t('PickupChecklistScreen.pickupCount', { count: item.orders.length })}
                                 </Text>
                             </YStack>
                         </Button>
                     )}
                     ListEmptyComponent={
                         <Text textAlign='center' color='$textSecondary' mt='$8'>
-                            暂无待取货订单
+                            {t('PickupChecklistScreen.noPickups')}
                         </Text>
                     }
                 />
@@ -255,27 +272,14 @@ const PickupChecklistScreen = () => {
                         {selectedGroup.pickupName}
                     </Text>
                     <Text fontSize='$2' color='$textSecondary' numberOfLines={1}>
-                        {selectedGroup.orders.length} 单 · 已扫 {scannedOrderIds.size}
+                        {t('PickupChecklistScreen.countSummary', { total: selectedGroup.orders.length, scanned: scannedOrderIds.size })}
                     </Text>
                 </YStack>
             </XStack>
 
-            {/* 摄像头预览占位（待接入 vision-camera） */}
-            <YStack
-                mx='$4'
-                height={160}
-                bg='$backgroundStrong'
-                borderRadius='$4'
-                borderWidth={1}
-                borderColor='$borderColor'
-                alignItems='center'
-                justifyContent='center'
-                mb='$3'
-            >
-                <FontAwesomeIcon icon={faQrcode} color='#999' size={28} />
-                <Text mt='$2' fontSize='$2' color='$textSecondary'>
-                    摄像头扫码（待接入），暂时请手动输入运单号
-                </Text>
+            {/* 摄像头扫码 */}
+            <YStack mx='$4' mb='$3'>
+                <BarcodeScanner height={180} enabled={!submitting} onScanned={handleScanned} />
             </YStack>
 
             {/* 手动输入 + 提交 */}
@@ -286,21 +290,21 @@ const PickupChecklistScreen = () => {
                     onChangeText={setCode}
                     autoCapitalize='characters'
                     autoCorrect={false}
-                    placeholder='输入运单号'
+                    placeholder={t('PickupChecklistScreen.trackingPlaceholder')}
                     editable={!submitting}
                 />
                 <Button
                     size='$4'
                     onPress={handleSubmitScan}
                     disabled={submitting || !code.trim()}
-                    bg='$blue9'
+                    bg='$blue-600'
                     pressStyle={{ opacity: 0.9 }}
                 >
                     {submitting ? (
                         <Spinner color='white' />
                     ) : (
                         <Text color='white' fontWeight='700'>
-                            确认本单已取
+                            {t('PickupChecklistScreen.confirmPickedUp')}
                         </Text>
                     )}
                 </Button>
@@ -322,10 +326,10 @@ const PickupChecklistScreen = () => {
                             mb='$2'
                             px='$3'
                             py='$3'
-                            bg={scanned ? '$green3' : '$backgroundStrong'}
+                            bg={scanned ? '$green-100' : '$backgroundStrong'}
                             borderRadius='$3'
                             borderWidth={1}
-                            borderColor={scanned ? '$green7' : '$borderColor'}
+                            borderColor={scanned ? '$green-300' : '$borderColor'}
                             alignItems='center'
                             space='$3'
                         >
@@ -335,7 +339,7 @@ const PickupChecklistScreen = () => {
                                 borderRadius={14}
                                 alignItems='center'
                                 justifyContent='center'
-                                bg={scanned ? '$green9' : '$backgroundStrong'}
+                                bg={scanned ? '$green-600' : '$backgroundStrong'}
                                 borderWidth={scanned ? 0 : 1}
                                 borderColor='$borderColor'
                             >
@@ -350,7 +354,7 @@ const PickupChecklistScreen = () => {
                                 </Text>
                                 {meta.package_count ? (
                                     <Text fontSize='$2' color='$textSecondary'>
-                                        {meta.package_count} 件 · {meta.estimated_weight_lbs ?? '—'} lbs
+                                        {t('PickupChecklistScreen.pieces', { count: meta.package_count, weight: meta.estimated_weight_lbs ?? '—' })}
                                     </Text>
                                 ) : null}
                             </YStack>
@@ -365,13 +369,13 @@ const PickupChecklistScreen = () => {
                     size='$5'
                     onPress={handleAdvanceAll}
                     disabled={advancing || scannedOrderIds.size === 0}
-                    bg={scannedOrderIds.size > 0 ? '$green9' : '$backgroundStrong'}
+                    bg={scannedOrderIds.size > 0 ? '$green-600' : '$backgroundStrong'}
                 >
                     {advancing ? (
                         <Spinner color='white' />
                     ) : (
                         <Text color={scannedOrderIds.size > 0 ? 'white' : '$textSecondary'} fontWeight='700'>
-                            批量推进 {scannedOrderIds.size}/{selectedGroup.orders.length}
+                            {t('PickupChecklistScreen.advanceBatch', { scanned: scannedOrderIds.size, total: selectedGroup.orders.length })}
                         </Text>
                     )}
                 </Button>

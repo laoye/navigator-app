@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faTruck, faWarehouse, faPlug } from '@fortawesome/free-solid-svg-icons';
 import DeviceInfo from 'react-native-device-info';
 import { useWarehouseAuth } from '../contexts/WarehouseAuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 /**
  * 启动后第一个屏幕：让用户选择"司机"还是"仓库员工"。
@@ -22,6 +23,7 @@ const RoleSelectScreen = () => {
     const insets = useSafeAreaInsets();
     const windowHeight = Dimensions.get('window').height;
     const { setActiveRole } = useWarehouseAuth();
+    const { t } = useLanguage();
 
     const handlePickDriver = () => {
         setActiveRole('driver');
@@ -42,10 +44,10 @@ const RoleSelectScreen = () => {
             <YStack justifyContent='center' alignItems='center' paddingTop={insets.top} marginTop={windowHeight / 5}>
                 <Image source={require('../../assets/navigator-icon-transparent.png')} style={{ width: 80, height: 80 }} />
                 <Text mt='$4' fontSize='$8' fontWeight='800' color='$textPrimary'>
-                    ForBox
+                    {t('RoleSelectScreen.title')}
                 </Text>
                 <Text mt='$2' fontSize='$3' color='$textSecondary'>
-                    选择身份继续
+                    {t('RoleSelectScreen.subtitle')}
                 </Text>
             </YStack>
 
@@ -54,24 +56,24 @@ const RoleSelectScreen = () => {
                     <Button
                         size='$5'
                         onPress={handlePickDriver}
-                        bg='$blue9'
-                        pressStyle={{ bg: '$blue10' }}
+                        bg='$blue-600'
+                        pressStyle={{ bg: '$blue-700' }}
                         icon={<FontAwesomeIcon icon={faTruck} color='white' size={18} />}
                     >
                         <Text color='white' fontSize='$5' fontWeight='700'>
-                            我是司机
+                            {t('RoleSelectScreen.pickDriver')}
                         </Text>
                     </Button>
 
                     <Button
                         size='$5'
                         onPress={handlePickWarehouse}
-                        bg='$green9'
-                        pressStyle={{ bg: '$green10' }}
+                        bg='$green-600'
+                        pressStyle={{ bg: '$green-700' }}
                         icon={<FontAwesomeIcon icon={faWarehouse} color='white' size={18} />}
                     >
                         <Text color='white' fontSize='$5' fontWeight='700'>
-                            我是仓库员工
+                            {t('RoleSelectScreen.pickWarehouse')}
                         </Text>
                     </Button>
 

@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faPaperPlane, faKey, faArrowRight, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { isValidPhoneNumber, navigatorConfig } from '../utils';
 import { useAuth } from '../contexts/AuthContext';
+import { useWarehouseAuth } from '../contexts/WarehouseAuthContext';
 import useAppTheme from '../hooks/use-app-theme';
 import PhoneInput from '../components/PhoneInput';
 import LinearGradient from 'react-native-linear-gradient';
@@ -17,6 +18,7 @@ const PhoneLoginScreen = () => {
     const theme = useTheme();
     const { isDarkMode } = useAppTheme();
     const { login, isSendingCode, phone: phoneState, loginMethod } = useAuth();
+    const { setActiveRole } = useWarehouseAuth();
     const [phone, setPhone] = useState(phoneState);
     const { t } = useLanguage();
 
@@ -37,8 +39,8 @@ const PhoneLoginScreen = () => {
         }
     };
 
-    const handleGoBackHome = () => {
-        navigation.goBack();
+    const handleSwitchRole = () => {
+        setActiveRole(null);
     };
 
     const handleCreateAccount = () => {
@@ -67,12 +69,12 @@ const PhoneLoginScreen = () => {
                 </YStack>
 
                 <YStack space='$4' width='100%' padding='$5'>
-                    <Button size='$5' onPress={handleGoBackHome} bg={isDarkMode ? '$secondary' : '$gray-700'} width='100%' rounded>
+                    <Button size='$5' onPress={handleSwitchRole} bg={isDarkMode ? '$secondary' : '$gray-700'} width='100%' rounded>
                         <Button.Icon>
                             <FontAwesomeIcon icon={faArrowLeft} color={isDarkMode ? theme['textPrimary'].val : theme['$gray-400'].val} />
                         </Button.Icon>
                         <Button.Text color={isDarkMode ? theme['textPrimary'].val : theme['$gray-400'].val} fontWeight='bold'>
-                            {t('PhoneLoginScreen.home')}
+                            {t('PhoneLoginScreen.switchRole')}
                         </Button.Text>
                     </Button>
                 </YStack>

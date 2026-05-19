@@ -2,12 +2,12 @@ import { getLangNameFromCode } from 'language-name-map';
 import { getString } from '../utils/storage';
 import { get, navigatorConfig } from '../utils';
 import en from '../locales/en.js';
-// import mn from '../../translations/mn.json';
+import zh from '../locales/zh.js';
 import I18n from 'react-native-i18n';
 
 export const translations = {
     en,
-    // mn,
+    zh,
 };
 
 export function getAvailableLocales() {

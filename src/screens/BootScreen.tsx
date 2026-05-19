@@ -9,6 +9,7 @@ import { setI18nConfig } from '../utils/localize';
 import { config, toArray, isArray, later } from '../utils';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useActiveRole, useIsWarehouseAuthenticated } from '../contexts/WarehouseAuthContext';
 import useFleetbase from '../hooks/use-fleetbase';
 import BootSplash from 'react-native-bootsplash';
 import SetupWarningScreen from './SetupWarningScreen';
@@ -20,6 +21,8 @@ const BootScreen = ({ route }) => {
     const navigation = useNavigation();
     const { hasFleetbaseConfig } = useFleetbase();
     const { isAuthenticated } = useAuth();
+    const isWarehouseAuth = useIsWarehouseAuthenticated();
+    const role = useActiveRole();
     const { t } = useLanguage();
     const [error, setError] = useState<Error | null>(null);
     const backgroundColor = toArray(config('BOOTSCREEN_BACKGROUND_COLOR', '$background'));
@@ -56,8 +59,14 @@ const BootScreen = ({ route }) => {
                             // Any initialization processes will run here
                             if (isAuthenticated) {
                                 navigation.navigate('DriverNavigator');
+                            } else if (isWarehouseAuth) {
+                                navigation.navigate('WarehouseNavigator');
+                            } else if (role === 'driver') {
+                                navigation.navigate('PhoneLogin');
+                            } else if (role === 'warehouse') {
+                                navigation.navigate('WarehouseLogin');
                             } else {
-                                navigation.navigate('Login');
+                                navigation.navigate('RoleSelect');
                             }
                         } catch (err) {
                             console.warn('Failed to navigate to screen:', err);
@@ -71,7 +80,7 @@ const BootScreen = ({ route }) => {
             };
 
             checkLocationPermission();
-        }, [navigation, isAuthenticated])
+        }, [navigation, isAuthenticated, isWarehouseAuth, role])
     );
 
     if (error) {

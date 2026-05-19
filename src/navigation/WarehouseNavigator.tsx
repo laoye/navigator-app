@@ -1,31 +1,47 @@
 import React from 'react';
-import { createStaticNavigation } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Text } from 'tamagui';
 import {
     faGaugeHigh,
     faQrcode,
-    faBoxesStacked,
     faUser,
 } from '@fortawesome/free-solid-svg-icons';
 import WarehouseDashboardScreen from '../screens/warehouse/WarehouseDashboardScreen';
 import WarehouseScanScreen from '../screens/warehouse/WarehouseScanScreen';
-import WarehouseInventoryScreen from '../screens/warehouse/WarehouseInventoryScreen';
 import WarehouseAccountScreen from '../screens/warehouse/WarehouseAccountScreen';
+import { useLanguage } from '../contexts/LanguageContext';
 
 /**
- * 仓库员工 Bottom Tab Navigator（4 Tab）。
+ * 仓库员工 Bottom Tab Navigator（3 Tab）。
  *
+ * "在库" 不再是独立 Tab；通过 Dashboard 的 stat 卡 push 到顶层 WarehouseList。
  * 与司机端 DriverNavigator 完全独立 —— 由 AppNavigator 顶层根据
  * activeRole 决定加载哪一个。
+ *
+ * tabBarLabel 通过自定义函数渲染，以便随 LanguageContext 自动重渲染。
  */
 
 const ICONS: Record<string, any> = {
     Dashboard: faGaugeHigh,
     Scan: faQrcode,
-    Inventory: faBoxesStacked,
     Account: faUser,
 };
+
+const I18N_KEYS: Record<string, string> = {
+    Dashboard: 'WarehouseNavigator.dashboard',
+    Scan: 'WarehouseNavigator.scan',
+    Account: 'WarehouseNavigator.account',
+};
+
+function TabBarLabel({ routeName, color }: { routeName: string; color: string }) {
+    const { t } = useLanguage();
+    return (
+        <Text color={color} fontSize='$1' fontWeight='600'>
+            {t(I18N_KEYS[routeName] ?? routeName)}
+        </Text>
+    );
+}
 
 const TabNavigator = createBottomTabNavigator({
     initialRouteName: 'Scan',
@@ -34,24 +50,14 @@ const TabNavigator = createBottomTabNavigator({
         tabBarIcon: ({ color, size }: { color: string; size: number }) => (
             <FontAwesomeIcon icon={ICONS[route.name] ?? faGaugeHigh} color={color} size={size} />
         ),
+        tabBarLabel: ({ color }: { color: string }) => (
+            <TabBarLabel routeName={route.name} color={color} />
+        ),
     }),
     screens: {
-        Dashboard: {
-            screen: WarehouseDashboardScreen,
-            options: { tabBarLabel: '概览' },
-        },
-        Scan: {
-            screen: WarehouseScanScreen,
-            options: { tabBarLabel: '扫码' },
-        },
-        Inventory: {
-            screen: WarehouseInventoryScreen,
-            options: { tabBarLabel: '在库' },
-        },
-        Account: {
-            screen: WarehouseAccountScreen,
-            options: { tabBarLabel: '账户' },
-        },
+        Dashboard: { screen: WarehouseDashboardScreen },
+        Scan: { screen: WarehouseScanScreen },
+        Account: { screen: WarehouseAccountScreen },
     },
 });
 

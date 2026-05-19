@@ -5,6 +5,8 @@ import AuthStack from './stacks/AuthStack';
 import DriverNavigator from './DriverNavigator';
 import WarehouseNavigator from './WarehouseNavigator';
 import PickupChecklistScreen from '../screens/PickupChecklistScreen';
+import WarehouseListScreen from '../screens/warehouse/WarehouseListScreen';
+import WarehouseOrderDetailScreen from '../screens/warehouse/WarehouseOrderDetailScreen';
 import { useIsAuthenticated } from '../contexts/AuthContext';
 import { useIsWarehouseAuthenticated, useActiveRole } from '../contexts/WarehouseAuthContext';
 import AppLayout from '../layouts/AppLayout';
@@ -56,6 +58,18 @@ const RootStack = createNativeStackNavigator({
             if: useShouldShowDriverApp,
             screen: PickupChecklistScreen,
             options: { headerShown: false, presentation: 'modal' },
+        },
+        // 仓库员工的多状态库存列表（Dashboard 的 stat 卡 push 进来；待入库/在库/待出库 共用）
+        WarehouseList: {
+            if: useShouldShowWarehouseApp,
+            screen: WarehouseListScreen,
+            options: { headerShown: false, presentation: 'card' },
+        },
+        // 仓库员工的订单详情（从 WarehouseList 卡片 push 进来）
+        WarehouseOrderDetail: {
+            if: useShouldShowWarehouseApp,
+            screen: WarehouseOrderDetailScreen,
+            options: { headerShown: false, presentation: 'card' },
         },
     },
 });
