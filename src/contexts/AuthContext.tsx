@@ -340,13 +340,23 @@ export const AuthProvider = ({ children }) => {
     const loadOrganizations = useCallback(async () => {
         if (!state.driver || loadOrganizationsPromiseRef.current) return;
 
+        // 提前挂 .catch() 防止 listOrganizations 拒绝时产生 "Uncaught (in promise)"
+        // 警告（email-login 司机往往没有 organization 关联，后端返回 404 是正常的）
+        const promise = state.driver.listOrganizations().catch((err) => {
+            // 司机若没绑 organization（email-login 路径常见），后端返回 404 属预期，
+            // 不应当作错误暴露在控制台 —— 仅 dev 模式打 debug 一行。
+            if (__DEV__) {
+                console.debug('[loadOrganizations] skipped:', err?.message ?? err);
+            }
+            return [];
+        });
+        loadOrganizationsPromiseRef.current = promise;
+
         try {
-            loadOrganizationsPromiseRef.current = state.driver.listOrganizations();
-            const organizations = await loadOrganizationsPromiseRef.current;
-            console.log('[loadOrganizations #organizations]', organizations);
-            setOrganizations(organizations.map((n) => n.serialize()));
-        } catch (err) {
-            console.warn('Error trying to load driver organizations:', err);
+            const organizations = await promise;
+            if (Array.isArray(organizations) && organizations.length) {
+                setOrganizations(organizations.map((n) => n.serialize()));
+            }
         } finally {
             organizationsLoadedRef.current = true;
             loadOrganizationsPromiseRef.current = null;

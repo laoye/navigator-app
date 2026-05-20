@@ -6,7 +6,7 @@ import { SimpleGrid } from 'react-native-super-grid';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faTimes, faQrcode } from '@fortawesome/free-solid-svg-icons';
 import { Text, YStack, XStack, useTheme, Button } from 'tamagui';
-import { format } from 'date-fns';
+import { formatLocalized as format } from '../utils/dateFns';
 import FastImage from 'react-native-fast-image';
 import useStorage from '../hooks/use-storage';
 import useFleetbase from '../hooks/use-fleetbase';

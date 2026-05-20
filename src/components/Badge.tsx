@@ -1,6 +1,12 @@
 import React from 'react';
 import { XStack, YStack, Text } from 'tamagui';
 import { titleize, getColorFromStatus } from '../utils/format';
+import { useLanguage } from '../contexts/LanguageContext';
+
+/** 把 status 字符串归一化成 i18n key（去空格/连字符，小写）。 */
+function normStatus(s: string): string {
+    return s.toLowerCase().replace(/[\s-]/g, '_');
+}
 
 /**
  * Given a base color and whether it's inverted or not,
@@ -37,6 +43,7 @@ function getColorScheme(color, inverted = false) {
  * - children: string | ReactNode - the text or content inside the badge
  */
 const Badge = ({ status, color, inverted = false, icon, iconPlacement = 'left', px = '$3', py = '$2', fontSize = '$2', borderRadius = '$4', numberOfLines, children, ...props }) => {
+    const { t } = useLanguage();
     let baseColor = color;
 
     if (!baseColor && status && typeof status === 'string') {
@@ -59,11 +66,17 @@ const Badge = ({ status, color, inverted = false, icon, iconPlacement = 'left', 
     return (
         <XStack alignItems='center' borderRadius={borderRadius} borderWidth={1} backgroundColor={bg} borderColor={border} px={px} py={py} space='$1' {...props}>
             {iconPlacement === 'left' && iconElement}
-            {status && (
-                <Text color={text} fontWeight='bold' fontSize={fontSize} numberOfLines={numberOfLines}>
-                    {titleize(status)}
-                </Text>
-            )}
+            {status && (() => {
+                const key = `orderStatus.${normStatus(status)}`;
+                const translated = t(key);
+                // i18n 命中则用译文；否则 titleize 兜底
+                const label = translated !== key ? translated : titleize(status);
+                return (
+                    <Text color={text} fontWeight='bold' fontSize={fontSize} numberOfLines={numberOfLines}>
+                        {label}
+                    </Text>
+                );
+            })()}
             {children}
             {iconPlacement === 'right' && iconElement}
         </XStack>

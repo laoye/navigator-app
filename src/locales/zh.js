@@ -4,6 +4,10 @@ export default {
     common: {
         apiKey: 'API Key',
         cancel: '取消',
+        yes: '是',
+        no: '否',
+        ok: '确定',
+        continue: '继续',
         close: '关闭',
         confirmDeletion: '确认删除',
         confirmation: '确认',
@@ -90,8 +94,14 @@ export default {
     AccountScreen: {
         account: '账户',
         clearCache: '清除缓存',
+        language: '语言',
         languageChanged: '语言已更新',
         schemeChanged: '主题已更新',
+        themeOptions: {
+            light: '浅色',
+            dark: '深色',
+            system: '跟随系统',
+        },
         signOut: '退出登录',
         signedOut: '已退出',
         cacheCleared: '缓存已清除',
@@ -182,11 +192,33 @@ export default {
         continue: '继续',
         waypointCompleted: '该地点已完成',
     },
+    DriverOrderManagementScreen: {
+        dayOrders: '%{day} 的订单',
+        activeOrdersCount: '进行中订单：%{count}',
+        ordersCount: '%{count} 单',
+        stopsLeft: '剩余 %{count} 站',
+        noCurrentOrders: '%{date} 暂无订单',
+    },
+    OrderWaypointList: {
+        tapToExpand: '点击展开',
+        tapToCollapse: '点击收起',
+        moreWaypoints: '另有 %{count} 个航点',
+    },
+    ProofOfDeliveryScreen: {
+        capturing: '正在采集交付凭证…',
+        qrValidateFailed: '无法识别二维码',
+        signatureSaveFailed: '签名保存失败',
+        photoUploadFailed: '照片上传失败',
+    },
     DriverDashboardScreen: {
         activeOrders: '活动订单',
         location: '位置：',
         speed: '速度',
         tracking: '追踪：',
+        latitude: '纬度',
+        longitude: '经度',
+        heading: '航向',
+        altitude: '海拔',
     },
     DriverReportScreen: {
         category: '类别：',
@@ -372,6 +404,7 @@ export default {
         updateActivity: '更新状态',
         warning: '提示！',
         waypointCompleted: '该地点已完成',
+        waypointCompletedMessage: '已完成 %{previous} 的航点活动。当前目的地已变更为 %{current}。可点击"当前目的地"随时更改。',
     },
     PastOrderCard: {
         currentDestination: '当前目的地',
@@ -549,6 +582,7 @@ export default {
         phone: '手机号',
     },
     ProfileScreen: {
+        organization: '组织',
         organizationChanged: '组织已切换',
     },
     WarehouseAccountScreen: {

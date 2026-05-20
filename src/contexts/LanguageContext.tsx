@@ -5,6 +5,8 @@ import { getAvailableLocales, getSystemPreferredLocale } from '../utils/localize
 import localeEmoji from 'locale-emoji';
 import useStorage from '../hooks/use-storage';
 import I18n from 'react-native-i18n';
+import moment from 'moment';
+import 'moment/locale/zh-cn';
 
 I18n.fallbacks = true;
 I18n.translations = {
@@ -35,13 +37,20 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
         return { code: locale, ...getLangNameFromCode(locale), emoji: localeEmoji(locale) };
     }, [locale]);
 
+    // 把 i18n locale 映射成 moment locale（驱动 react-native-calendar-strip 等 moment 消费方）
+    const applyMomentLocale = (l: string) => {
+        moment.locale(l === 'zh' ? 'zh-cn' : 'en');
+    };
+
     const setLocale = (newLocale: string) => {
         I18n.locale = newLocale;
+        applyMomentLocale(newLocale);
         setLocaleState(newLocale);
     };
 
     useEffect(() => {
         I18n.locale = locale;
+        applyMomentLocale(locale);
     }, []);
 
     const t = (key: string, options?: Record<string, any>) => I18n.t(key, options);

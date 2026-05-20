@@ -470,7 +470,8 @@ export function showActionSheet({ title, message, options, cancelButtonIndex, de
             style: index === cancelButtonIndex ? 'cancel' : index === destructiveButtonIndex ? 'destructive' : 'default',
         }));
 
-        Alert.alert(title || 'Choose an option', message || '', buttons, { cancelable: true });
+        // 调用方未传 title 时不展示标题（避免硬编码英文 "Choose an option"）
+        Alert.alert(title ?? '', message || '', buttons, { cancelable: true });
     }
 }
 

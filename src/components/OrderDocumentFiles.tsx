@@ -4,7 +4,7 @@ import { YStack, XStack, Text, Button, useTheme } from 'tamagui';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faFile, faDownload, faEye } from '@fortawesome/free-solid-svg-icons';
 import { SimpleGrid } from 'react-native-super-grid';
-import { format } from 'date-fns';
+import { formatLocalized as format } from '../utils/dateFns';
 import { formatBytes } from '../utils/format';
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import FastImage from 'react-native-fast-image';

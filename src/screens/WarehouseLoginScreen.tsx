@@ -39,9 +39,10 @@ const WarehouseLoginScreen = () => {
     };
 
     const handleBackToRoleSelect = () => {
-        // 清掉持久化角色让用户重新选择
+        // 清掉持久化角色让用户重新选择。WarehouseLogin 的 if 立刻 false → 栈 pop
+        // 回 Boot；Boot useFocusEffect 检测 role=null 后自动导到 RoleSelect。
+        // 不需要显式 navigation.navigate('RoleSelect')，避免触发 navigator 警告。
         setActiveRole(null);
-        navigation.navigate('RoleSelect');
     };
 
     return (

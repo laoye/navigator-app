@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faBox, faLocationDot } from '@fortawesome/free-solid-svg-icons';
 import { formatDuration, titleize, formatWhatsAppTimestamp } from '../utils/format';
 import { Place } from '@fleetbase/sdk';
-import { format as formatDate } from 'date-fns';
+import { formatLocalized as formatDate } from '../utils/dateFns';
 import useFleetbase from '../hooks/use-fleetbase';
 import useOrderResource from '../hooks/use-order-resource';
 import useAppTheme from '../hooks/use-app-theme';

@@ -16,6 +16,7 @@ import BackButton from '../components/BackButton';
 import CustomHeader from '../components/CustomHeader';
 import LoadingOverlay from '../components/LoadingOverlay';
 import SignatureCanvas from 'react-native-signature-canvas';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const ProofOfDeliveryScreen = ({ route }) => {
     const theme = useTheme();
@@ -24,8 +25,9 @@ const ProofOfDeliveryScreen = ({ route }) => {
     const { adapter } = useFleetbase();
     const { setValue } = useTempStore();
     const { screenWidth, screenHeight } = useDimensions();
+    const { t } = useLanguage();
     const [isLoading, setIsLoading] = useState(false);
-    const [loadingOverlayMessage, setLoadingOverlayMessage] = useState('Capturing Proof of Delivery...');
+    const [loadingOverlayMessage, setLoadingOverlayMessage] = useState(t('ProofOfDeliveryScreen.capturing'));
     const signatureScreenRef = useRef(null);
     const params = route.params ?? {};
     const activity = params.activity;
@@ -52,7 +54,7 @@ const ProofOfDeliveryScreen = ({ route }) => {
                 setValue('proof', { proof, activity, order: order.id, waypoint: waypoint?.id, entity: entity?.id });
                 navigation.goBack();
             } catch (err) {
-                toast.error(err.message ?? 'Unable to validate captured QR Code.');
+                toast.error(err.message ?? t('ProofOfDeliveryScreen.qrValidateFailed'));
                 console.warn('Error capturing QR code as proof:', err);
             } finally {
                 setIsLoading(false);
@@ -70,7 +72,7 @@ const ProofOfDeliveryScreen = ({ route }) => {
                 setValue('proof', { proof, activity, order: order.id, waypoint: waypoint?.id, entity: entity?.id });
                 navigation.goBack();
             } catch (err) {
-                toast.error(err.message ?? 'Something went wrong saving the signature.');
+                toast.error(err.message ?? t('ProofOfDeliveryScreen.signatureSaveFailed'));
                 console.warn('Error capturing signature as proof:', err);
             } finally {
                 setIsLoading(false);
@@ -108,7 +110,7 @@ const ProofOfDeliveryScreen = ({ route }) => {
                 setValue('proof', { proof, activity, order: order.id, waypoint: waypoint?.id, entity: entity?.id });
                 navigation.goBack();
             } catch (err) {
-                toast.error(err.message ?? 'Unable to upload captured photos.');
+                toast.error(err.message ?? t('ProofOfDeliveryScreen.photoUploadFailed'));
                 console.warn('Error capturing photos as proof:', err);
             } finally {
                 setIsLoading(false);

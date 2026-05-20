@@ -6,7 +6,7 @@ import { faBox, faLocationDot, faBan, faCheck } from '@fortawesome/free-solid-sv
 import { formatDuration, formatMeters, titleize, formatWhatsAppTimestamp } from '../utils/format';
 import { getDistance } from '../utils/location';
 import { Place } from '@fleetbase/sdk';
-import { format as formatDate } from 'date-fns';
+import { formatLocalized as formatDate } from '../utils/dateFns';
 import { useLocation } from '../contexts/LocationContext';
 import { useAuth } from '../contexts/AuthContext';
 import useAppTheme from '../hooks/use-app-theme';

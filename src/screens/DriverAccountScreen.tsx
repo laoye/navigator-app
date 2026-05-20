@@ -25,7 +25,22 @@ const DriverAccountScreen = () => {
     const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
     const handleClearCache = () => {
-        storage.clearStore();
+        // 仅清缓存类 key，保留登录态、角色、语言、连接配置等
+        const PRESERVED = new Set([
+            '_driver_token',
+            'driver',
+            '_warehouse_token',
+            '_warehouse_staff',
+            '_active_role',
+            '_locale',
+            '_instance_link_config',
+            'organizations',
+        ]);
+        for (const key of storage.getAllKeys()) {
+            if (!PRESERVED.has(key) && !key.startsWith('_instance_link')) {
+                storage.delete(key);
+            }
+        }
         toast.success(t('AccountScreen.cacheCleared'), { position: ToastPosition.BOTTOM });
     };
 
@@ -142,7 +157,7 @@ const DriverAccountScreen = () => {
     };
 
     const handleSelectScheme = () => {
-        const options = [...schemes.map((scheme) => titleize(scheme)), t('common.cancel')];
+        const options = [...schemes.map((scheme) => t(`AccountScreen.themeOptions.${scheme}`)), t('common.cancel')];
         showActionSheet({
             options,
             cancelButtonIndex: options.length - 1,
@@ -150,7 +165,7 @@ const DriverAccountScreen = () => {
                 if (buttonIndex !== options.length - 1) {
                     const selectedScheme = schemes[buttonIndex];
                     changeScheme(selectedScheme);
-                    toast.success(t('AccountScreen.schemeChanged', { selectedScheme }), {
+                    toast.success(t('AccountScreen.schemeChanged', { selectedScheme: t(`AccountScreen.themeOptions.${selectedScheme}`) }), {
                         position: ToastPosition.BOTTOM,
                     });
                 }
@@ -247,7 +262,7 @@ const DriverAccountScreen = () => {
             onPress: () => navigation.navigate('EditAccountProperty', { property: { name: t('AccountScreen.name'), key: 'name', component: 'input' } }),
         },
         {
-            title: 'Language',
+            title: t('AccountScreen.language'),
             rightComponent: (
                 <Text color='$textSecondary' opacity={0.5}>
                     {language.native}
@@ -259,7 +274,7 @@ const DriverAccountScreen = () => {
             title: t('AccountScreen.theme'),
             rightComponent: (
                 <Text color='$textSecondary' opacity={0.5}>
-                    {titleize(userColorScheme)}
+                    {t(`AccountScreen.themeOptions.${userColorScheme}`)}
                 </Text>
             ),
             onPress: handleSelectScheme,

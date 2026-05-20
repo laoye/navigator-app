@@ -2,7 +2,6 @@ import { useNavigation } from '@react-navigation/native';
 import { Text, YStack, XStack, useTheme } from 'tamagui';
 import { useLocation } from '../contexts/LocationContext';
 import { useOrderManager } from '../contexts/OrderManagerContext';
-import { humanize } from 'inflected';
 import { get } from '../utils';
 import OdometerNumber from '../components/OdometerNumber';
 import useAppTheme from '../hooks/use-app-theme';
@@ -34,7 +33,7 @@ const DriverDashboardScreen = () => {
                                 <Text color='$textPrimary'>{t('DriverDashboardScreen.tracking')}</Text>
                             </YStack>
                             <YStack flex={1} alignItems='flex-end'>
-                                <Text color={isTracking ? '$successBorder' : '$textSecondary'}>{isTracking ? 'Yes' : 'No'}</Text>
+                                <Text color={isTracking ? '$successBorder' : '$textSecondary'}>{isTracking ? t('common.yes') : t('common.no')}</Text>
                             </YStack>
                         </XStack>
                     </WidgetContainer>
@@ -46,7 +45,7 @@ const DriverDashboardScreen = () => {
                             {['latitude', 'longitude', 'heading', 'altitude'].map((key, index) => {
                                 return (
                                     <YStack key={index} width='45%' overflow='hidden'>
-                                        <Text color='$textSecondary'>{humanize(key)}:</Text>
+                                        <Text color='$textSecondary'>{t(`DriverDashboardScreen.${key}`)}:</Text>
                                         <Text color='$textPrimary' numberOfLines={1}>
                                             {get(location, `coords.${key}`)}
                                         </Text>

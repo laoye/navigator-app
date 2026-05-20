@@ -2,6 +2,10 @@ export default {
   common: {
     apiKey: 'API Key',
     cancel: 'Cancel',
+    yes: 'Yes',
+    no: 'No',
+    ok: 'OK',
+    continue: 'Continue',
     close: 'Close',
     confirmDeletion: 'Confirm Deletion',
     confirmation: 'Confirmation',
@@ -23,8 +27,14 @@ export default {
   AccountScreen: {
     account: 'Account',
     cacheCleared: 'Cache cleared.',
+    language: 'Language',
     languageChanged: 'Language updated.',
     schemeChanged: 'Theme updated.',
+    themeOptions: {
+      light: 'Light',
+      dark: 'Dark',
+      system: 'System',
+    },
     changeProfilePhotoOptions: {
       deleteProfilePhoto: 'Delete Profile Photo',
       photoLibrary: 'Photo Library',
@@ -131,16 +141,39 @@ export default {
     continue: 'Continue',
     waypointCompleted: 'Waypoint Completed',
   },
+  DriverOrderManagementScreen: {
+    dayOrders: '%{day} orders',
+    activeOrdersCount: 'Active Orders: %{count}',
+    ordersCount: '%{count} orders',
+    stopsLeft: '%{count} stops left',
+    noCurrentOrders: 'No current orders for %{date}',
+  },
+  OrderWaypointList: {
+    tapToExpand: 'Tap to expand',
+    tapToCollapse: 'Tap to collapse',
+    moreWaypoints: '%{count} more waypoints',
+  },
+  ProofOfDeliveryScreen: {
+    capturing: 'Capturing Proof of Delivery…',
+    qrValidateFailed: 'Unable to validate captured QR code.',
+    signatureSaveFailed: 'Something went wrong saving the signature.',
+    photoUploadFailed: 'Unable to upload captured photos.',
+  },
   DriverDashboardScreen: {
     activeOrders: 'Active Orders',
     location: 'Location:',
     speed: 'Speed',
     tracking: 'Tracking:',
+    latitude: 'Latitude',
+    longitude: 'Longitude',
+    heading: 'Heading',
+    altitude: 'Altitude',
   },
   DriverFleetScreen: {
     driverfleetscreen: 'Fleet',
   },
   ProfileScreen: {
+    organization: 'Organization',
     organizationChanged: 'Organization changed.',
   },
   DriverNavigator: {
@@ -371,6 +404,7 @@ export default {
     updateActivity: 'Update Activity',
     warning: 'Warning!',
     waypointCompleted: 'Waypoint Completed',
+    waypointCompletedMessage: 'Waypoint activity completed for destination %{previous}. Your current destination is now %{current}. You can change the destination anytime by pressing the "Current Destination" button.',
   },
   PastOrderCard: {
     currentDestination: 'Current Destination',

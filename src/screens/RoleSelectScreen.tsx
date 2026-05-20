@@ -25,14 +25,16 @@ const RoleSelectScreen = () => {
     const { setActiveRole } = useWarehouseAuth();
     const { t } = useLanguage();
 
+    // 仅切换 activeRole；RoleSelect 的 `if:` 立刻 false → 栈 pop 回 Boot →
+    // BootScreen useFocusEffect 检测到 role=driver/warehouse 后自动导航到对应登录页。
+    // 旧版本手动 navigate('PhoneLogin') 会在 if filter 还没刷新时报
+    // "PhoneLogin was not handled by any navigator" 警告。
     const handlePickDriver = () => {
         setActiveRole('driver');
-        navigation.navigate('PhoneLogin');
     };
 
     const handlePickWarehouse = () => {
         setActiveRole('warehouse');
-        navigation.navigate('WarehouseLogin');
     };
 
     const handleOpenInstanceLink = () => {
