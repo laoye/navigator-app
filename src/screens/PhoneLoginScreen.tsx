@@ -43,6 +43,10 @@ const PhoneLoginScreen = () => {
         setActiveRole(null);
     };
 
+    const handleOpenEmailLogin = () => {
+        navigation.navigate('EmailLogin');
+    };
+
     const handleCreateAccount = () => {
         navigation.navigate('CreateAccount');
     };
@@ -60,6 +64,11 @@ const PhoneLoginScreen = () => {
                         <Button.Icon>{isSendingCode ? <Spinner color='$white' /> : <FontAwesomeIcon icon={faPaperPlane} color={'#fff'} />}</Button.Icon>
                         <Button.Text color='$white' fontWeight='bold'>
                             {t('PhoneLoginScreen.sendVerificationCode')}
+                        </Button.Text>
+                    </Button>
+                    <Button size='$3' onPress={handleOpenEmailLogin} bg='transparent' mt='$2'>
+                        <Button.Text color='$gray-400' fontSize='$3'>
+                            {t('PhoneLoginScreen.loginByEmail')}
                         </Button.Text>
                     </Button>
                 </YStack>

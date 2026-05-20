@@ -1,6 +1,7 @@
 import LoginScreen from '../../screens/LoginScreen';
 import PhoneLoginScreen from '../../screens/PhoneLoginScreen';
 import PhoneLoginVerifyScreen from '../../screens/PhoneLoginVerifyScreen';
+import EmailLoginScreen from '../../screens/EmailLoginScreen';
 import CreateAccountScreen from '../../screens/CreateAccountScreen';
 import CreateAccountVerifyScreen from '../../screens/CreateAccountVerifyScreen';
 import RoleSelectScreen from '../../screens/RoleSelectScreen';
@@ -82,6 +83,14 @@ export const PhoneLoginVerify = {
     },
 };
 
+export const EmailLogin = {
+    if: useShouldShowDriverEntry,
+    screen: EmailLoginScreen,
+    options: {
+        headerShown: false,
+    },
+};
+
 export const CreateAccount = {
     if: useShouldShowDriverEntry,
     screen: CreateAccountScreen,
@@ -104,6 +113,7 @@ export default {
     Login,
     PhoneLogin,
     PhoneLoginVerify,
+    EmailLogin,
     CreateAccount,
     CreateAccountVerify,
 };

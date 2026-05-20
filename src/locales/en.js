@@ -372,6 +372,17 @@ export default {
     loginViaSms: 'Login via SMS',
     sendVerificationCode: 'Send Verification Code',
     switchRole: 'Switch role',
+    loginByEmail: 'Or sign in with email & password',
+  },
+  EmailLoginScreen: {
+    title: 'Sign in with Email',
+    email: 'Email',
+    emailPlaceholder: 'you@example.com',
+    password: 'Password',
+    passwordPlaceholder: '••••••••',
+    submit: 'Sign in',
+    backToSms: 'Back to SMS login',
+    invalidEmailOrPassword: 'Email or password is incorrect',
   },
   PhoneLoginVerifyScreen: {
     unableToSendSms: 'Unable to send SMS.',

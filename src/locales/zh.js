@@ -60,6 +60,17 @@ export default {
         loginViaSms: '短信登录',
         sendVerificationCode: '发送验证码',
         switchRole: '切换身份',
+        loginByEmail: '或使用邮箱密码登录',
+    },
+    EmailLoginScreen: {
+        title: '邮箱登录',
+        email: '邮箱',
+        emailPlaceholder: 'you@example.com',
+        password: '密码',
+        passwordPlaceholder: '••••••••',
+        submit: '登录',
+        backToSms: '返回短信登录',
+        invalidEmailOrPassword: '邮箱或密码错误',
     },
     PhoneLoginVerifyScreen: {
         unableToSendSms: '无法发送短信。',

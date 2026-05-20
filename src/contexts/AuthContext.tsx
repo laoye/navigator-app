@@ -5,6 +5,7 @@ import { Driver } from '@fleetbase/sdk';
 import { later, isArray, navigatorConfig } from '../utils';
 import useStorage, { storage } from '../hooks/use-storage';
 import useFleetbase from '../hooks/use-fleetbase';
+import { useConfig } from './ConfigContext';
 import { useLanguage } from './LanguageContext';
 import { useNotification } from './NotificationContext';
 import { LoginManager as FacebookLoginManager } from 'react-native-fbsdk-next';
@@ -34,6 +35,7 @@ const authReducer = (state, action) => {
 
 export const AuthProvider = ({ children }) => {
     const { fleetbase, adapter } = useFleetbase();
+    const { resolveConnectionConfig } = useConfig();
     const { setLocale } = useLanguage();
     const { deviceToken } = useNotification();
     const [storedDriver, setStoredDriver] = useStorage('driver');
@@ -232,6 +234,40 @@ export const AuthProvider = ({ children }) => {
         [fleetbase]
     );
 
+    // ForBox 邮箱密码登录（OpsAuth 风格的次路径，绕过 SMS）
+    const loginByEmail = useCallback(
+        async (email, password) => {
+            dispatch({ type: 'VERIFY', isVerifyingCode: true });
+            try {
+                const host = resolveConnectionConfig('FLEETBASE_HOST');
+                if (!host) throw new Error('Fleetbase host not configured');
+                const url = `${String(host).replace(/\/$/, '')}/forbox/int/v1/forbox/driver/auth/login`;
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                    body: JSON.stringify({ email, password }),
+                });
+                const body = await res.json().catch(() => ({}));
+                if (!res.ok || body.status !== 'ok') {
+                    throw new Error(body?.message ?? `HTTP ${res.status}`);
+                }
+                const driverData = { ...body.data.driver, token: body.data.token };
+                // 简单写 storage —— 顶层 useEffect 监听 storedDriver 变化会触发 RESTORE_SESSION，
+                // 构造 Driver 实例，AppNavigator 检测 isAuthenticated 自动切到 DriverNavigator。
+                storage.delete('organizations');
+                setAuthToken(driverData.token);
+                setStoredDriver(driverData);
+                dispatch({ type: 'VERIFY', isVerifyingCode: false });
+                return driverData;
+            } catch (error) {
+                dispatch({ type: 'VERIFY', isVerifyingCode: false });
+                console.warn('[AuthContext] Email login failed:', error);
+                throw error;
+            }
+        },
+        [resolveConnectionConfig, deviceToken, adapter]
+    );
+
     // Login: Send verification code
     const login = useCallback(
         async (phone) => {
@@ -250,9 +286,10 @@ export const AuthProvider = ({ children }) => {
 
     // Remove local session data
     const clearSessionData = () => {
-        storage.removeItem('_driver_token');
-        storage.removeItem('organizations');
-        storage.removeItem('driver');
+        // react-native-mmkv v3 uses delete(), not removeItem()
+        storage.delete('_driver_token');
+        storage.delete('organizations');
+        storage.delete('driver');
 
         // If logged in with facebook
         FacebookLoginManager.logOut();
@@ -396,6 +433,7 @@ export const AuthProvider = ({ children }) => {
             clearSessionData,
             setDriver,
             login,
+            loginByEmail,
             verifyCode,
             logout,
             requestCreationCode,
@@ -408,6 +446,7 @@ export const AuthProvider = ({ children }) => {
         [
             state,
             login,
+            loginByEmail,
             verifyCode,
             logout,
             loadOrganizations,
