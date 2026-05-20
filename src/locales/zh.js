@@ -4,6 +4,7 @@ export default {
     common: {
         apiKey: 'API Key',
         cancel: '取消',
+        chooseAnOption: '请选择',
         yes: '是',
         no: '否',
         ok: '确定',
@@ -602,6 +603,10 @@ export default {
         subtitle: '选择一个取货地点开始扫码',
         entryTitle: '聚合取货',
         entrySubtitle: '%{orders} 单 · %{locations} 个地点',
+        listLabel: '待取货清单 · %{scanned}/%{total}',
+        summaryTitle: '共 %{orders} 单待取',
+        summarySubtitle: '分布在 %{locations} 个仓库',
+        toPickUpUnit: '单待取',
         pickupCount: '%{count} 单待取',
         noPickups: '暂无待取货订单',
         noPickupSpecified: '未指定取货地点',

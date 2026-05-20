@@ -2,6 +2,7 @@ export default {
   common: {
     apiKey: 'API Key',
     cancel: 'Cancel',
+    chooseAnOption: 'Choose an option',
     yes: 'Yes',
     no: 'No',
     ok: 'OK',
@@ -600,6 +601,10 @@ export default {
     subtitle: 'Select a pickup location to start scanning',
     entryTitle: 'Batch Pickup',
     entrySubtitle: '%{orders} orders · %{locations} location(s)',
+    listLabel: 'Orders to pick up · %{scanned}/%{total}',
+    summaryTitle: '%{orders} orders to pick up',
+    summarySubtitle: 'Across %{locations} location(s)',
+    toPickUpUnit: 'to pick',
     pickupCount: '%{count} to pick up',
     noPickups: 'No pickups available',
     noPickupSpecified: 'No pickup specified',

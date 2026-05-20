@@ -608,12 +608,12 @@ const DriverNavigator = createBottomTabNavigator({
 
                 return <FontAwesomeIcon icon={icon} size={isAndroid ? 18 : 20} color={focused ? focusedColor : blurredColor} />;
             },
-            tabBarLabelStyle: ({ focused }) => {
-                return {
-                    marginTop: isAndroid ? 4 : 15,
-                    fontSize: isAndroid ? 13 : 15,
-                    fontWeight: focued ? 600 : 300,
-                };
+            // tabBarLabelStyle 是 StyleProp<TextStyle>，不能是函数。上游原代码写成函数 + typo `focued`，
+            // 既导致 focus 状态字重永远是默认，又留下潜在 ReferenceError。改为静态 style。
+            tabBarLabelStyle: {
+                marginTop: isAndroid ? 4 : 15,
+                fontSize: isAndroid ? 13 : 15,
+                fontWeight: '600',
             },
         };
     },

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId } from 'react';
 import { Switch, Label, XStack } from 'tamagui';
 import { useAuth } from '../contexts/AuthContext';
 import useAppTheme from '../hooks/use-app-theme';
@@ -7,6 +7,9 @@ const DriverOnlineToggle = ({ showLabel = false, ...props }) => {
     const { isDarkMode } = useAppTheme();
     const { isOnline, toggleOnline, isUpdating } = useAuth();
     const [checked, setChecked] = useState(isOnline);
+    // 用 useId 保证每个实例唯一；上游硬编码 'driverOnline' 会在 bottom-tab 切换瞬间
+    // 旧/新 header 同时存在，触发 "duplicate ID for input" 警告
+    const switchId = useId();
 
     const onCheckedChange = async (checked) => {
         setChecked(checked);
@@ -26,7 +29,7 @@ const DriverOnlineToggle = ({ showLabel = false, ...props }) => {
     return (
         <XStack alignItems='center' gap='$2'>
             <Switch
-                id='driverOnline'
+                id={switchId}
                 checked={checked}
                 onCheckedChange={onCheckedChange}
                 disabled={isUpdating}
@@ -38,7 +41,7 @@ const DriverOnlineToggle = ({ showLabel = false, ...props }) => {
                 <Switch.Thumb animation='quick' bg={isDarkMode ? '$gray-200' : '$white'} borderColor={isDarkMode ? '$gray-700' : '$gray-500'} borderWidth={1} />
             </Switch>
             {showLabel === true && (
-                <Label htmlFor='driverOnline' color='$gray-500' size='$2' lineHeight='$4'>
+                <Label htmlFor={switchId} color='$gray-500' size='$2' lineHeight='$4'>
                     {checked ? 'Online' : 'Offline'}
                 </Label>
             )}

@@ -1,6 +1,7 @@
 import Config from 'react-native-config';
 import { Platform, ActionSheetIOS, Alert, Dimensions } from 'react-native';
 import { Collection, lookup } from '@fleetbase/sdk';
+import I18n from 'react-native-i18n';
 import storage, { getString } from './storage';
 import { capitalize } from './format';
 import { themes } from '../../tamagui.config';
@@ -446,11 +447,15 @@ export function abbreviateName(name, length = 2) {
 }
 
 export function showActionSheet({ title, message, options, cancelButtonIndex, destructiveButtonIndex, onSelect }) {
+    // 调用方未传 title 时走 i18n 兜底（en: "Choose an option" / zh: "请选择"），
+    // 避免动作菜单完全无标题导致用户困惑
+    const resolvedTitle = title ?? I18n.t('common.chooseAnOption');
+
     if (Platform.OS === 'ios') {
         // iOS Action Sheet
         ActionSheetIOS.showActionSheetWithOptions(
             {
-                title,
+                title: resolvedTitle,
                 message,
                 options,
                 cancelButtonIndex,
@@ -470,8 +475,7 @@ export function showActionSheet({ title, message, options, cancelButtonIndex, de
             style: index === cancelButtonIndex ? 'cancel' : index === destructiveButtonIndex ? 'destructive' : 'default',
         }));
 
-        // 调用方未传 title 时不展示标题（避免硬编码英文 "Choose an option"）
-        Alert.alert(title ?? '', message || '', buttons, { cancelable: true });
+        Alert.alert(resolvedTitle, message || '', buttons, { cancelable: true });
     }
 }
 
