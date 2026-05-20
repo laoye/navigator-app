@@ -373,11 +373,14 @@ export default {
   },
   PhoneLoginScreen: {
     home: 'Home',
-    invalidPhoneNumberProvided: 'Invalid phone number provided.',
+    invalidPhoneNumberProvided: 'Please enter a valid 10-digit US phone number.',
     loginViaSms: 'Login via SMS',
     sendVerificationCode: 'Send Verification Code',
     switchRole: 'Switch role',
     loginByEmail: 'Or sign in with email & password',
+  },
+  UsPhoneInput: {
+    placeholder: '(555) 555-5555',
   },
   EmailLoginScreen: {
     title: 'Sign in with Email',

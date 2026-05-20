@@ -9,7 +9,7 @@ import { isValidPhoneNumber, navigatorConfig } from '../utils';
 import { useAuth } from '../contexts/AuthContext';
 import { useWarehouseAuth } from '../contexts/WarehouseAuthContext';
 import useAppTheme from '../hooks/use-app-theme';
-import PhoneInput from '../components/PhoneInput';
+import UsPhoneInput from '../components/UsPhoneInput';
 import LinearGradient from 'react-native-linear-gradient';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -59,7 +59,7 @@ const PhoneLoginScreen = () => {
                     <Text color='$gray-200' fontWeight='bold' fontSize='$8' mb='$3'>
                         {t('PhoneLoginScreen.loginViaSms')}
                     </Text>
-                    <PhoneInput value={phone} onChange={(phoneNumber) => setPhone(phoneNumber)} />
+                    <UsPhoneInput value={phone} onChange={(e164) => setPhone(e164)} />
                     <Button size='$5' onPress={handleSendVerificationCode} bg='$primary' width='100%' opacity={isSendingCode ? 0.75 : 1} disabled={isSendingCode} rounded>
                         <Button.Icon>{isSendingCode ? <Spinner color='$white' /> : <FontAwesomeIcon icon={faPaperPlane} color={'#fff'} />}</Button.Icon>
                         <Button.Text color='$white' fontWeight='bold'>
