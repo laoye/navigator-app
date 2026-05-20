@@ -23,6 +23,8 @@ export default {
   AccountScreen: {
     account: 'Account',
     cacheCleared: 'Cache cleared.',
+    languageChanged: 'Language updated.',
+    schemeChanged: 'Theme updated.',
     changeProfilePhotoOptions: {
       deleteProfilePhoto: 'Delete Profile Photo',
       photoLibrary: 'Photo Library',
@@ -136,7 +138,10 @@ export default {
     tracking: 'Tracking:',
   },
   DriverFleetScreen: {
-    driverfleetscreen: 'DriverFleetScreen',
+    driverfleetscreen: 'Fleet',
+  },
+  ProfileScreen: {
+    organizationChanged: 'Organization changed.',
   },
   DriverNavigator: {
     createANewFuelReport: 'Create a new Fuel Report',
@@ -163,6 +168,9 @@ export default {
     volume: 'Volume:',
   },
   EditAccountPropertyScreen: {
+    email: 'Email',
+    name: 'Name',
+    phone: 'Phone Number',
   },
   EditLocationCoordScreen: {
     savePosition: 'Save Position',

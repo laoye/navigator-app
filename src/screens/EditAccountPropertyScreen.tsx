@@ -17,7 +17,7 @@ const RenderAccountProperty = ({ property, value, onChange }) => {
             {property.component === 'phone-input' ? (
                 <PhoneInput value={value} onChange={onChange} wrapperProps={{ flex: 1 }} />
             ) : (
-                <Input value={value} onChangeText={onChange} size='$5' placeholder={t('EditAccountPropertyScreen.' + property.name)} />
+                <Input value={value} onChangeText={onChange} size='$5' placeholder={t('EditAccountPropertyScreen.' + property.key)} />
             )}
         </YStack>
     );
@@ -38,7 +38,7 @@ const EditAccountPropertyScreen = ({ route }) => {
         try {
             const updatedDriver = await runWithLoading(driver.update({ [property.key]: value }));
             setDriver(updatedDriver);
-            toast.success(t('EditAccountPropertyScreen.' + property.name) + ' changes saved.');
+            toast.success(t('EditAccountPropertyScreen.' + property.key) + ' changes saved.');
             navigation.goBack();
         } catch (error) {
             toast.error(error.message);
@@ -51,7 +51,7 @@ const EditAccountPropertyScreen = ({ route }) => {
                 <XStack space='$3' alignItems='center' mb='$5'>
                     <BackButton size={40} />
                     <Text color='$textPrimary' fontWeight='bold' fontSize='$8' numberOfLines={1}>
-                        {t('EditAccountPropertyScreen.' + property.name)}
+                        {t('EditAccountPropertyScreen.' + property.key)}
                     </Text>
                 </XStack>
                 <XStack width='100%'>

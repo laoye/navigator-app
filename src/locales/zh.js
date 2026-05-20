@@ -90,6 +90,8 @@ export default {
     AccountScreen: {
         account: '账户',
         clearCache: '清除缓存',
+        languageChanged: '语言已更新',
+        schemeChanged: '主题已更新',
         signOut: '退出登录',
         signedOut: '已退出',
         cacheCleared: '缓存已清除',
@@ -522,6 +524,32 @@ export default {
         reports: '报告',
         chat: '消息',
         account: '账户',
+        createANewFuelReport: '新建加油记录',
+        createANewIssue: '新建问题',
+        navigator: '司机',
+    },
+    DriverFleetScreen: {
+        driverfleetscreen: '车队',
+    },
+    FleetScreen: {
+        fleetscreen: '车队',
+    },
+    TestScreen: {
+        helloWorld: '你好',
+    },
+    UnitInput: {
+        searchUnit: '搜索单位',
+    },
+    VehicleScreen: {
+        vehiclescreen: '车辆',
+    },
+    EditAccountPropertyScreen: {
+        email: '邮箱',
+        name: '姓名',
+        phone: '手机号',
+    },
+    ProfileScreen: {
+        organizationChanged: '组织已切换',
     },
     WarehouseAccountScreen: {
         settings: '设置',
