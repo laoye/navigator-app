@@ -77,13 +77,31 @@ function getTabConfig(name, key, defaultValue = null) {
     return defaultValue;
 }
 
+function DriverTabBarLabel({ tKey, fallback, color }: { tKey: string; fallback: string; color: string }) {
+    const { t } = useLanguage();
+    const label = t(tKey);
+    // 若 env 显式提供 override（whitelabel）则优先；否则用 i18n 翻译；最后兜底 fallback
+    return (
+        <Text color={color} fontSize='$1' fontWeight='600'>
+            {label === tKey ? fallback : label}
+        </Text>
+    );
+}
+
+function makeDriverTabLabel(tKey: string, envKey: string, fallback: string) {
+    const envOverride = config(envKey, '');
+    return ({ color }: { color: string }) => (
+        <DriverTabBarLabel tKey={tKey} fallback={envOverride || fallback} color={color} />
+    );
+}
+
 function createTabScreens() {
     const tabs = toArray(navigatorConfig('driverNavigator.tabs', 'DriverDashboardTab,DriverTaskTab,DriverReportTab,DriverChatTab,DriverAccountTab'));
     const screens = {
         DriverDashboardTab: {
             screen: DriverDashboardTab,
             options: {
-                tabBarLabel: config('DRIVER_DASHBOARD_TAB_LABEL', 'Dash'),
+                tabBarLabel: makeDriverTabLabel('DriverNavigator.dashboard', 'DRIVER_DASHBOARD_TAB_LABEL', 'Dash'),
             },
         },
         DriverTaskTab: {
@@ -92,7 +110,7 @@ function createTabScreens() {
                 const { allActiveOrders } = useOrderManager();
 
                 return {
-                    tabBarLabel: config('DRIVER_ORDER_TAB_LABEL', 'Orders'),
+                    tabBarLabel: makeDriverTabLabel('DriverNavigator.orders', 'DRIVER_ORDER_TAB_LABEL', 'Orders'),
                     tabBarBadge: allActiveOrders.length,
                     tabBarBadgeStyle: {
                         marginRight: -5,
@@ -105,7 +123,7 @@ function createTabScreens() {
             screen: DriverReportTab,
             options: () => {
                 return {
-                    tabBarLabel: config('DRIVER_REPORT_TAB_LABEL', 'Reports'),
+                    tabBarLabel: makeDriverTabLabel('DriverNavigator.reports', 'DRIVER_REPORT_TAB_LABEL', 'Reports'),
                 };
             },
         },
@@ -115,7 +133,7 @@ function createTabScreens() {
                 const { unreadCount } = useChat();
 
                 return {
-                    tabBarLabel: config('DRIVER_CHAT_TAB_LABEL', 'Chat'),
+                    tabBarLabel: makeDriverTabLabel('DriverNavigator.chat', 'DRIVER_CHAT_TAB_LABEL', 'Chat'),
                     tabBarBadge: unreadCount,
                     tabBarBadgeStyle: {
                         marginRight: -5,
@@ -128,7 +146,7 @@ function createTabScreens() {
             screen: DriverAccountTab,
             options: () => {
                 return {
-                    tabBarLabel: config('DRIVER_ACCOUNT_TAB_LABEL', 'Account'),
+                    tabBarLabel: makeDriverTabLabel('DriverNavigator.account', 'DRIVER_ACCOUNT_TAB_LABEL', 'Account'),
                 };
             },
         },

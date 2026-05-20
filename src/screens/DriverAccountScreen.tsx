@@ -10,6 +10,7 @@ import { showActionSheet, abbreviateName } from '../utils';
 import { titleize } from '../utils/format';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useWarehouseAuth } from '../contexts/WarehouseAuthContext';
 import useAppTheme from '../hooks/use-app-theme';
 import DeviceInfo from 'react-native-device-info';
 import storage from '../utils/storage';
@@ -20,6 +21,7 @@ const DriverAccountScreen = () => {
     const { t, language, languages, setLocale } = useLanguage();
     const { userColorScheme, appTheme, changeScheme, schemes, isDarkMode } = useAppTheme();
     const { driver, logout, isSigningOut, updateDriver } = useAuth();
+    const { setActiveRole } = useWarehouseAuth();
     const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
     const handleClearCache = () => {
@@ -29,6 +31,8 @@ const DriverAccountScreen = () => {
 
     const handleSignout = () => {
         logout();
+        // 与 Warehouse 退出一致：清掉 activeRole，下次进入应用回到 RoleSelect。
+        setActiveRole(null);
         toast.success(t('AccountScreen.signedOut'));
     };
 

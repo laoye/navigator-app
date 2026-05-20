@@ -142,6 +142,11 @@ export default {
     createANewFuelReport: 'Create a new Fuel Report',
     createANewIssue: 'Create a new Issue',
     navigator: 'Navigator',
+    dashboard: 'Dash',
+    orders: 'Orders',
+    reports: 'Reports',
+    chat: 'Chat',
+    account: 'Account',
   },
   DriverReportScreen: {
     category: 'Category:',

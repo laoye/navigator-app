@@ -236,6 +236,13 @@ export default {
         scan: '扫码',
         account: '账户',
     },
+    DriverNavigator: {
+        dashboard: '概览',
+        orders: '订单',
+        reports: '报告',
+        chat: '消息',
+        account: '账户',
+    },
     WarehouseAccountScreen: {
         settings: '设置',
         language: '语言',

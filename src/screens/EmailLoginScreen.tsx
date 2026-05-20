@@ -76,6 +76,9 @@ const EmailLoginScreen = () => {
                                 placeholder={t('EmailLoginScreen.emailPlaceholder')}
                                 editable={!busy}
                                 color='white'
+                                bg='rgba(255,255,255,0.08)'
+                                borderColor='rgba(255,255,255,0.18)'
+                                placeholderTextColor='rgba(255,255,255,0.4)'
                             />
                         </YStack>
 
@@ -91,6 +94,9 @@ const EmailLoginScreen = () => {
                                 placeholder={t('EmailLoginScreen.passwordPlaceholder')}
                                 editable={!busy}
                                 color='white'
+                                bg='rgba(255,255,255,0.08)'
+                                borderColor='rgba(255,255,255,0.18)'
+                                placeholderTextColor='rgba(255,255,255,0.4)'
                             />
                         </YStack>
 
