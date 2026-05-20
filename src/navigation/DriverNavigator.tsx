@@ -42,6 +42,7 @@ import ChatParticipantsScreen from '../screens/ChatParticipantsScreen';
 import CreateChatChannelScreen from '../screens/CreateChatChannelScreen';
 import DriverProfileScreen from '../screens/DriverProfileScreen';
 import DriverAccountScreen from '../screens/DriverAccountScreen';
+import EditAccountPropertyScreen from '../screens/EditAccountPropertyScreen';
 import { useOrderManager } from '../contexts/OrderManagerContext';
 import { useChat } from '../contexts/ChatContext';
 import useAppTheme from '../hooks/use-app-theme';
@@ -518,6 +519,14 @@ const DriverAccountTab = createNativeStackNavigator({
                     },
                 };
             },
+        },
+        EditAccountProperty: {
+            screen: EditAccountPropertyScreen,
+            options: ({ route, navigation }) => ({
+                title: route?.params?.property?.name ?? '',
+                headerShadowVisible: false,
+                headerLeft: () => <BackButton onPress={() => navigation.goBack()} />,
+            }),
         },
     },
 });

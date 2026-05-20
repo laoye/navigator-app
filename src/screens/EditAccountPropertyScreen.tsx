@@ -28,21 +28,22 @@ const EditAccountPropertyScreen = ({ route }) => {
     const property = route.params.property;
     const theme = useTheme();
     const navigation = useNavigation();
-    const { customer, setCustomer } = useAuth();
+    const { driver, setDriver } = useAuth();
     const { runWithLoading, isLoading } = usePromiseWithLoading();
-    const [value, setValue] = useState(customer.getAttribute(property.key));
-    const mutated = value !== customer.getAttribute(property.key);
+    const [value, setValue] = useState(driver?.getAttribute(property.key) ?? '');
+    const mutated = value !== (driver?.getAttribute(property.key) ?? '');
 
     const handleUpdateProperty = useCallback(async () => {
+        if (!driver) return;
         try {
-            const updatedCustomer = await runWithLoading(customer.update({ [property.key]: value }));
-            setCustomer(updatedCustomer);
+            const updatedDriver = await runWithLoading(driver.update({ [property.key]: value }));
+            setDriver(updatedDriver);
             toast.success(t('EditAccountPropertyScreen.' + property.name) + ' changes saved.');
             navigation.goBack();
         } catch (error) {
             toast.error(error.message);
         }
-    }, [customer, runWithLoading, setCustomer, value, property.name]);
+    }, [driver, runWithLoading, setDriver, value, property.name]);
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: theme.background.val }}>
