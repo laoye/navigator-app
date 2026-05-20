@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { FlatList, RefreshControl, Platform } from 'react-native';
+import { FlatList, Pressable, RefreshControl, Platform } from 'react-native';
 import { Text, YStack, XStack, Separator, useTheme } from 'tamagui';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
+import { faInfoCircle, faClipboardList, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { endOfYear, format, startOfYear, subDays } from 'date-fns';
 import { formatLocalized } from '../utils/dateFns';
 import { formatDuration, formatMeters } from '../utils/format';
@@ -144,6 +144,28 @@ const DriverOrderManagementScreen = () => {
         }, [listen, driver.id])
     );
 
+    const pickupSummary = useMemo(() => {
+        const TARGET_STATUSES = new Set(['dispatched', 'started']);
+        const locationIds = new Set<string>();
+        let orderCount = 0;
+        for (const order of allActiveOrders ?? []) {
+            const status = order.getAttribute('status');
+            if (!TARGET_STATUSES.has(status)) continue;
+            const meta = order.getAttribute('meta') ?? {};
+            if (meta.inbound_method === 'merchant_dropoff') continue;
+            const pickup = order.getAttribute('payload.pickup');
+            if (!pickup) continue;
+            const id = pickup.id ?? pickup.uuid ?? pickup.street1 ?? 'no-pickup';
+            locationIds.add(id);
+            orderCount++;
+        }
+        return { orders: orderCount, locations: locationIds.size };
+    }, [allActiveOrders]);
+
+    const handleOpenPickupChecklist = useCallback(() => {
+        navigation.navigate('PickupChecklist');
+    }, [navigation]);
+
     const handleAdhocDismissal = useCallback(
         (order) => {
             setDimissedOrders((prevDismissedOrders) => [...prevDismissedOrders, order.id]);
@@ -203,6 +225,53 @@ const DriverOrderManagementScreen = () => {
                         ItemSeparatorComponent={() => <Separator borderBottomWidth={1} borderColor='$borderColorWithShadow' />}
                     />
                 </YStack>
+            </YStack>
+        );
+    };
+
+    const PickupChecklistEntry = () => {
+        if (pickupSummary.orders === 0) return null;
+        return (
+            <YStack px='$3' pt='$3'>
+                <Pressable onPress={handleOpenPickupChecklist}>
+                    <XStack
+                        alignItems='center'
+                        bg='$background'
+                        borderWidth={1}
+                        borderColor={isDarkMode ? '$borderColor' : '$borderColorWithShadow'}
+                        borderRadius='$4'
+                        px='$3'
+                        py='$3'
+                        space='$3'
+                    >
+                        <XStack
+                            width={40}
+                            height={40}
+                            borderRadius='$3'
+                            bg={isDarkMode ? '$info' : '$blue-600'}
+                            alignItems='center'
+                            justifyContent='center'
+                        >
+                            <FontAwesomeIcon
+                                icon={faClipboardList}
+                                color={isDarkMode ? theme.textPrimary.val : theme.surface.val}
+                                size={18}
+                            />
+                        </XStack>
+                        <YStack flex={1}>
+                            <Text color='$textPrimary' fontSize={15} fontWeight='700'>
+                                {t('PickupChecklistScreen.entryTitle')}
+                            </Text>
+                            <Text color='$textSecondary' fontSize={12} mt='$1'>
+                                {t('PickupChecklistScreen.entrySubtitle', {
+                                    orders: pickupSummary.orders,
+                                    locations: pickupSummary.locations,
+                                })}
+                            </Text>
+                        </YStack>
+                        <FontAwesomeIcon icon={faChevronRight} color={theme['$textSecondary'].val} size={14} />
+                    </XStack>
+                </Pressable>
             </YStack>
         );
     };
@@ -298,6 +367,7 @@ const DriverOrderManagementScreen = () => {
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
                 ItemSeparatorComponent={() => <Separator borderBottomWidth={1} borderColor='$borderColorWithShadow' />}
+                ListHeaderComponent={<PickupChecklistEntry />}
                 ListFooterComponent={<Spacer height={200} />}
                 ListEmptyComponent={<NoOrders />}
             />

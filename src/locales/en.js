@@ -598,6 +598,8 @@ export default {
   PickupChecklistScreen: {
     title: 'Pickup Checklist',
     subtitle: 'Select a pickup location to start scanning',
+    entryTitle: 'Batch Pickup',
+    entrySubtitle: '%{orders} orders · %{locations} location(s)',
     pickupCount: '%{count} to pick up',
     noPickups: 'No pickups available',
     noPickupSpecified: 'No pickup specified',
