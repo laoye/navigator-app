@@ -522,11 +522,9 @@ const DriverAccountTab = createNativeStackNavigator({
         },
         EditAccountProperty: {
             screen: EditAccountPropertyScreen,
-            options: ({ route, navigation }) => ({
-                title: route?.params?.property?.name ?? '',
-                headerShadowVisible: false,
-                headerLeft: () => <BackButton onPress={() => navigation.goBack()} />,
-            }),
+            // 屏内已经画了大字标题 + BackButton；这里隐藏 native stack header
+            // 避免出现两个标题 + 两个返回按钮
+            options: { headerShown: false },
         },
     },
 });
