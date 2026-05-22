@@ -80,9 +80,21 @@ export const AuthProvider = ({ children }) => {
 
             const driverInstance = newDriver instanceof Driver ? newDriver : new Driver(newDriver, adapter);
 
-            // Restore driver token if needed
-            if (!driverInstance.token && storage.getString('_driver_token')) {
-                driverInstance.setAttribute('token', storage.getString('_driver_token'));
+            // Restore driver token if needed.
+            // _driver_token 由 useStorage 以 JSON.stringify 写入（带引号），这里必须 JSON.parse
+            // 还原，否则把带引号的 token 塞进 driver 对象，下次 setAuthToken 再 stringify 会双重编码，
+            // 导致请求头变成 `Bearer "95|..."` 被后端判 401。
+            if (!driverInstance.token) {
+                const rawToken = storage.getString('_driver_token');
+                if (rawToken) {
+                    let parsedToken = rawToken;
+                    try {
+                        parsedToken = JSON.parse(rawToken);
+                    } catch {
+                        // 已是裸 token，原样使用
+                    }
+                    driverInstance.setAttribute('token', parsedToken);
+                }
             }
 
             setStoredDriver(driverInstance.serialize());
