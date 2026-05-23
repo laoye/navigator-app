@@ -26,6 +26,10 @@ export default {
         select: '选择',
         storefront: 'Storefront',
         tryAgain: '重试',
+        errors: {
+            fleetbaseHostNotConfigured: '服务器连接未配置',
+            loadFailed: '加载失败，请重试。',
+        },
     },
     BootScreen: {
         missingRequiredConfigurationKeys: '缺少必要的配置项。',
@@ -105,6 +109,7 @@ export default {
         },
         signOut: '退出登录',
         signedOut: '已退出',
+        switchToWarehouse: '切换到仓库端',
         cacheCleared: '缓存已清除',
         email: '邮箱',
         name: '姓名',
@@ -595,6 +600,7 @@ export default {
         signOut: '退出登录',
         confirmSignOut: '确认退出并返回身份选择？',
         signOutConfirm: '退出',
+        switchToDriver: '切换到司机端',
         roleAdmin: '管理员',
         roleWarehouse: '仓库员工',
     },

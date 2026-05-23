@@ -1,7 +1,8 @@
 import React from 'react';
+import { Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { Text } from 'tamagui';
+import { Text, useTheme } from 'tamagui';
 import {
     faGaugeHigh,
     faQrcode,
@@ -11,6 +12,7 @@ import WarehouseDashboardScreen from '../screens/warehouse/WarehouseDashboardScr
 import WarehouseScanScreen from '../screens/warehouse/WarehouseScanScreen';
 import WarehouseAccountScreen from '../screens/warehouse/WarehouseAccountScreen';
 import { useLanguage } from '../contexts/LanguageContext';
+import useAppTheme from '../hooks/use-app-theme';
 
 /**
  * 仓库员工 Bottom Tab Navigator（3 Tab）。
@@ -45,15 +47,30 @@ function TabBarLabel({ routeName, color }: { routeName: string; color: string })
 
 const TabNavigator = createBottomTabNavigator({
     initialRouteName: 'Scan',
-    screenOptions: ({ route }: any) => ({
-        headerShown: false,
-        tabBarIcon: ({ color, size }: { color: string; size: number }) => (
-            <FontAwesomeIcon icon={ICONS[route.name] ?? faGaugeHigh} color={color} size={size} />
-        ),
-        tabBarLabel: ({ color }: { color: string }) => (
-            <TabBarLabel routeName={route.name} color={color} />
-        ),
-    }),
+    screenOptions: ({ route }: any) => {
+        // 司机端 DriverNavigator 把这套主题色绑定到 tabBar；仓库端此前完全没设，
+        // 暗色模式下 tabBar 会停留在 RN 默认白底蓝字。这里对齐司机端范式。
+        const theme = useTheme();
+        const { isDarkMode } = useAppTheme();
+
+        return {
+            headerShown: false,
+            tabBarActiveTintColor: theme.primary.val,
+            tabBarInactiveTintColor: theme.tabIconBlur.val,
+            tabBarStyle: {
+                backgroundColor: theme.background.val,
+                borderTopWidth: Platform.OS === 'android' ? 0 : 1,
+                borderTopColor: isDarkMode ? theme['$gray-800'].val : theme['$gray-300'].val,
+                elevation: 0,
+            },
+            tabBarIcon: ({ color, size }: { color: string; size: number }) => (
+                <FontAwesomeIcon icon={ICONS[route.name] ?? faGaugeHigh} color={color} size={size} />
+            ),
+            tabBarLabel: ({ color }: { color: string }) => (
+                <TabBarLabel routeName={route.name} color={color} />
+            ),
+        };
+    },
     screens: {
         Dashboard: { screen: WarehouseDashboardScreen },
         Scan: { screen: WarehouseScanScreen },

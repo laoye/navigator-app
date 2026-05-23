@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, Input, Text, XStack, YStack } from 'tamagui';
+import { Button, Input, Text, XStack, YStack, useTheme } from 'tamagui';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import {
     faArrowLeft,
@@ -13,6 +13,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useConfig } from '../../contexts/ConfigContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import useAppTheme from '../../hooks/use-app-theme';
 import {
     fetchOrders,
     presentRow,
@@ -46,6 +47,8 @@ const WarehouseListScreen = () => {
     const { resolveConnectionConfig } = useConfig();
     const { t } = useLanguage();
     const insets = useSafeAreaInsets();
+    const theme = useTheme();
+    const { isDarkMode } = useAppTheme();
 
     const mode = (route.params?.mode ?? 'in_warehouse') as WarehouseListMode;
 
@@ -61,7 +64,7 @@ const WarehouseListScreen = () => {
         async (targetPage: number, append: boolean) => {
             const host = resolveConnectionConfig('FLEETBASE_HOST');
             if (!host) {
-                setError('Fleetbase host not configured');
+                setError(t('common.errors.fleetbaseHostNotConfigured'));
                 return;
             }
             setLoading(true);
@@ -74,7 +77,7 @@ const WarehouseListScreen = () => {
                 setHasMore(append ? rows.length + fetched.length < total : fetched.length < total);
                 setError(null);
             } catch (err) {
-                setError(err instanceof Error ? err.message : 'load failed');
+                setError(err instanceof Error ? err.message : t('common.errors.loadFailed'));
             } finally {
                 setLoading(false);
             }
@@ -127,7 +130,7 @@ const WarehouseListScreen = () => {
                     size='$3'
                     chromeless
                     onPress={() => navigation.goBack()}
-                    icon={<FontAwesomeIcon icon={faArrowLeft} color='#888' size={16} />}
+                    icon={<FontAwesomeIcon icon={faArrowLeft} color={theme.textSecondary.val} size={16} />}
                 />
                 <Text ml='$2' fontSize='$7' fontWeight='800' color='$textPrimary' flex={1}>
                     {t(MODE_LABEL_KEYS[mode])} {rows.length > 0 ? `· ${rows.length}` : ''}
@@ -142,7 +145,7 @@ const WarehouseListScreen = () => {
                             key={m}
                             flex={1}
                             size='$3'
-                            bg={active ? '$blue-600' : '$backgroundStrong'}
+                            bg={active ? '$blue-600' : '$surface'}
                             borderColor='$borderColor'
                             borderWidth={1}
                             onPress={() => switchMode(m)}
@@ -160,14 +163,15 @@ const WarehouseListScreen = () => {
                 value={query}
                 onChangeText={setQuery}
                 placeholder={t('WarehouseListScreen.searchPlaceholder')}
+                placeholderTextColor={isDarkMode ? '$gray-500' : '$gray-400'}
                 autoCapitalize='none'
                 autoCorrect={false}
                 mb='$3'
             />
 
             {error && (
-                <YStack p='$3' bg='$red-100' borderRadius='$3' mb='$3'>
-                    <Text color='$red-700'>{error}</Text>
+                <YStack p='$3' bg={isDarkMode ? '$red-900' : '$red-100'} borderRadius='$3' mb='$3'>
+                    <Text color={isDarkMode ? '$red-200' : '$red-700'}>{error}</Text>
                 </YStack>
             )}
 
@@ -188,7 +192,7 @@ const WarehouseListScreen = () => {
                         py='$3'
                         px='$3'
                         mb='$2'
-                        bg='$backgroundStrong'
+                        bg='$surface'
                         borderRadius='$3'
                         borderWidth={1}
                         borderColor='$borderColor'
@@ -207,7 +211,7 @@ const WarehouseListScreen = () => {
 
                         {(item.merchantName || item.merchantOrderNo) && (
                             <XStack alignItems='center' space='$1.5'>
-                                <FontAwesomeIcon icon={faStore} color='#999' size={11} />
+                                <FontAwesomeIcon icon={faStore} color={theme.textSecondary.val} size={11} />
                                 <Text fontSize='$2' color='$textSecondary' flex={1} numberOfLines={1}>
                                     {item.merchantName || '—'}
                                     {item.merchantOrderNo ? ` · ${item.merchantOrderNo}` : ''}
@@ -217,7 +221,7 @@ const WarehouseListScreen = () => {
 
                         {item.destCity && (
                             <XStack alignItems='center' space='$1.5'>
-                                <FontAwesomeIcon icon={faLocationDot} color='#999' size={11} />
+                                <FontAwesomeIcon icon={faLocationDot} color={theme.textSecondary.val} size={11} />
                                 <Text fontSize='$2' color='$textSecondary' flex={1} numberOfLines={1}>
                                     {item.destCity}
                                 </Text>
@@ -227,7 +231,7 @@ const WarehouseListScreen = () => {
                         <XStack alignItems='center' space='$3' flexWrap='wrap'>
                             {item.routeCode && (
                                 <XStack alignItems='center' space='$1'>
-                                    <FontAwesomeIcon icon={faRoute} color='#999' size={11} />
+                                    <FontAwesomeIcon icon={faRoute} color={theme.textSecondary.val} size={11} />
                                     <Text fontSize='$2' color='$textSecondary'>
                                         {item.routeCode}
                                     </Text>
@@ -235,7 +239,7 @@ const WarehouseListScreen = () => {
                             )}
                             {(item.packageCount != null || item.weightLbs != null) && (
                                 <XStack alignItems='center' space='$1'>
-                                    <FontAwesomeIcon icon={faBoxesStacked} color='#999' size={11} />
+                                    <FontAwesomeIcon icon={faBoxesStacked} color={theme.textSecondary.val} size={11} />
                                     <Text fontSize='$2' color='$textSecondary'>
                                         {item.packageCount != null ? t('WarehouseListScreen.piecesShort', { count: item.packageCount }) : ''}
                                         {item.weightLbs != null ? ` · ${t('WarehouseListScreen.weightLbs', { weight: item.weightLbs })}` : ''}

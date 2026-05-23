@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useMemo, ReactNode } from 'react';
+import I18n from 'react-native-i18n';
 import useStorage from '../hooks/use-storage';
 import { useConfig } from './ConfigContext';
 
@@ -45,7 +46,7 @@ export const WarehouseAuthProvider = ({ children }: { children: ReactNode }) => 
         async (email: string, password: string): Promise<WarehouseStaff> => {
             const host = resolveConnectionConfig('FLEETBASE_HOST');
             if (!host) {
-                throw new Error('Fleetbase host not configured');
+                throw new Error(I18n.t('common.errors.fleetbaseHostNotConfigured'));
             }
 
             const url = `${String(host).replace(/\/$/, '')}/forbox/int/v1/forbox/ops/auth/login`;

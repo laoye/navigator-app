@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, Input, Text, XStack, YStack } from 'tamagui';
+import { Button, Input, Text, XStack, YStack, useTheme } from 'tamagui';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faCheck, faTimes, faRotateRight } from '@fortawesome/free-solid-svg-icons';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useConfig } from '../../contexts/ConfigContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import useAppTheme from '../../hooks/use-app-theme';
 import BarcodeScanner from '../../components/BarcodeScanner';
 import {
     enqueuePendingScan,
@@ -40,6 +41,8 @@ const WarehouseScanScreen = () => {
     const { resolveConnectionConfig } = useConfig();
     const { t } = useLanguage();
     const insets = useSafeAreaInsets();
+    const theme = useTheme();
+    const { isDarkMode } = useAppTheme();
 
     const [mode, setMode] = useState<ScanMode>('scan-in');
     const [code, setCode] = useState('');
@@ -55,7 +58,7 @@ const WarehouseScanScreen = () => {
         async (mode: ScanMode, code: string) => {
             const host = resolveConnectionConfig('FLEETBASE_HOST');
             if (!host) {
-                throw new Error('Fleetbase host not configured');
+                throw new Error(t('common.errors.fleetbaseHostNotConfigured'));
             }
             return mode === 'scan-in' ? scanIn(String(host), code) : scanOut(String(host), code);
         },
@@ -182,7 +185,7 @@ const WarehouseScanScreen = () => {
 
     return (
         <ScrollView
-            style={{ flex: 1 }}
+            style={{ flex: 1, backgroundColor: theme.background.val }}
             contentContainerStyle={{ paddingTop: insets.top + 16, paddingHorizontal: 16, paddingBottom: 32 }}
             keyboardShouldPersistTaps='handled'
         >
@@ -191,7 +194,7 @@ const WarehouseScanScreen = () => {
                 <Button
                     flex={1}
                     size='$4'
-                    bg={mode === 'scan-in' ? '$blue-600' : '$backgroundStrong'}
+                    bg={mode === 'scan-in' ? '$blue-600' : '$surface'}
                     borderColor='$borderColor'
                     borderWidth={1}
                     onPress={() => setMode('scan-in')}
@@ -203,7 +206,7 @@ const WarehouseScanScreen = () => {
                 <Button
                     flex={1}
                     size='$4'
-                    bg={mode === 'scan-out' ? '$orange-500' : '$backgroundStrong'}
+                    bg={mode === 'scan-out' ? '$orange-500' : '$surface'}
                     borderColor='$borderColor'
                     borderWidth={1}
                     onPress={() => setMode('scan-out')}
@@ -231,6 +234,7 @@ const WarehouseScanScreen = () => {
                     autoCapitalize='characters'
                     autoCorrect={false}
                     placeholder={t('WarehouseScanScreen.trackingPlaceholder')}
+                    placeholderTextColor={isDarkMode ? '$gray-500' : '$gray-400'}
                     editable={!submitting}
                 />
                 <Button
@@ -264,7 +268,7 @@ const WarehouseScanScreen = () => {
                                 space='$3'
                                 px='$3'
                                 py='$2'
-                                bg='$backgroundStrong'
+                                bg='$surface'
                                 borderRadius='$3'
                             >
                                 <FontAwesomeIcon
@@ -290,13 +294,13 @@ const WarehouseScanScreen = () => {
             {pending.length > 0 && (
                 <YStack
                     p='$3'
-                    bg='$orange-100'
+                    bg={isDarkMode ? '$orange-900' : '$orange-100'}
                     borderRadius='$3'
                     borderWidth={1}
-                    borderColor='$orange-300'
+                    borderColor={isDarkMode ? '$orange-700' : '$orange-300'}
                     space='$2'
                 >
-                    <Text color='$orange-700' fontWeight='700'>
+                    <Text color={isDarkMode ? '$orange-200' : '$orange-700'} fontWeight='700'>
                         {t('WarehouseScanScreen.pendingCount', { count: pending.length })}
                     </Text>
                     {pending.slice(0, 5).map((p) => (
@@ -320,7 +324,7 @@ const WarehouseScanScreen = () => {
                                 {t('WarehouseScanScreen.retryAll')}
                             </Text>
                         </Button>
-                        <Button size='$3' flex={1} bg='$backgroundStrong' onPress={handleClearPending}>
+                        <Button size='$3' flex={1} bg='$surface' onPress={handleClearPending}>
                             <Text color='$textPrimary'>{t('WarehouseScanScreen.clear')}</Text>
                         </Button>
                     </XStack>

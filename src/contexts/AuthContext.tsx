@@ -36,7 +36,7 @@ const authReducer = (state, action) => {
 export const AuthProvider = ({ children }) => {
     const { fleetbase, adapter } = useFleetbase();
     const { resolveConnectionConfig } = useConfig();
-    const { setLocale } = useLanguage();
+    const { setLocale, t } = useLanguage();
     const { deviceToken } = useNotification();
     const [storedDriver, setStoredDriver] = useStorage('driver');
     const [organizations, setOrganizations] = useStorage('organizations', []);
@@ -132,6 +132,10 @@ export const AuthProvider = ({ children }) => {
     // Track driver position and other position related data
     const trackDriver = useCallback(
         async (data = {}) => {
+            // 仓库端单独登录（无司机 session）或切到司机端但尚未登录时 state.driver 为 null，
+            // 后台定位仍可能触发 track —— 必须短路，否则抛
+            // "TypeError: Cannot read property 'track' of null"（未处理的 promise rejection）。
+            if (!state.driver) return;
             try {
                 const driver = await state.driver.track(data);
                 setDriver(driver);
@@ -252,7 +256,7 @@ export const AuthProvider = ({ children }) => {
             dispatch({ type: 'VERIFY', isVerifyingCode: true });
             try {
                 const host = resolveConnectionConfig('FLEETBASE_HOST');
-                if (!host) throw new Error('Fleetbase host not configured');
+                if (!host) throw new Error(t('common.errors.fleetbaseHostNotConfigured'));
                 const url = `${String(host).replace(/\/$/, '')}/forbox/int/v1/forbox/driver/auth/login`;
                 const res = await fetch(url, {
                     method: 'POST',

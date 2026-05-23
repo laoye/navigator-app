@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Input, Text, XStack, YStack } from 'tamagui';
+import { Input, Text, XStack, YStack, useTheme } from 'tamagui';
 import { useConfig } from '../../contexts/ConfigContext';
+import { useLanguage } from '../../contexts/LanguageContext';
+import useAppTheme from '../../hooks/use-app-theme';
 import { fetchInventory, presentRow, type WarehouseOrderRow } from '../../warehouse/warehouseApi';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faLocationDot, faRoute, faBoxesStacked, faStore } from '@fortawesome/free-solid-svg-icons';
@@ -17,7 +19,10 @@ const PER_PAGE = 20;
  */
 const WarehouseInventoryScreen = () => {
     const { resolveConnectionConfig } = useConfig();
+    const { t } = useLanguage();
     const insets = useSafeAreaInsets();
+    const theme = useTheme();
+    const { isDarkMode } = useAppTheme();
 
     const [rows, setRows] = useState<WarehouseOrderRow[]>([]);
     const [page, setPage] = useState(1);
@@ -31,7 +36,7 @@ const WarehouseInventoryScreen = () => {
         async (nextPage: number, replace = false) => {
             const host = resolveConnectionConfig('FLEETBASE_HOST');
             if (!host) {
-                setError('Fleetbase host not configured');
+                setError(t('common.errors.fleetbaseHostNotConfigured'));
                 return;
             }
             setLoading(true);
@@ -45,7 +50,7 @@ const WarehouseInventoryScreen = () => {
                 setHasMore(total > 0 ? accumulated < total : newRows.length === PER_PAGE);
                 setError(null);
             } catch (err) {
-                setError(err instanceof Error ? err.message : 'load failed');
+                setError(err instanceof Error ? err.message : t('common.errors.loadFailed'));
             } finally {
                 setLoading(false);
             }
@@ -87,7 +92,7 @@ const WarehouseInventoryScreen = () => {
     }, [presented, query]);
 
     return (
-        <YStack flex={1} pt={insets.top + 12} px='$4'>
+        <YStack flex={1} pt={insets.top + 12} px='$4' bg='$background'>
             <XStack alignItems='center' justifyContent='space-between' mb='$3'>
                 <Text fontSize='$7' fontWeight='800' color='$textPrimary'>
                     在库 {rows.length}
@@ -99,14 +104,15 @@ const WarehouseInventoryScreen = () => {
                 value={query}
                 onChangeText={setQuery}
                 placeholder='搜索运单号 / 收件人'
+                placeholderTextColor={isDarkMode ? '$gray-500' : '$gray-400'}
                 autoCapitalize='none'
                 autoCorrect={false}
                 mb='$3'
             />
 
             {error && (
-                <YStack p='$3' bg='$red3' borderRadius='$3' mb='$3'>
-                    <Text color='$red11'>{error}</Text>
+                <YStack p='$3' bg={isDarkMode ? '$red-900' : '$red-100'} borderRadius='$3' mb='$3'>
+                    <Text color={isDarkMode ? '$red-200' : '$red-700'}>{error}</Text>
                 </YStack>
             )}
 
@@ -121,7 +127,7 @@ const WarehouseInventoryScreen = () => {
                         py='$3'
                         px='$3'
                         mb='$2'
-                        bg='$backgroundStrong'
+                        bg='$surface'
                         borderRadius='$3'
                         borderWidth={1}
                         borderColor='$borderColor'
@@ -140,7 +146,7 @@ const WarehouseInventoryScreen = () => {
 
                         {(item.merchantName || item.merchantOrderNo) && (
                             <XStack alignItems='center' space='$1.5'>
-                                <FontAwesomeIcon icon={faStore} color='#999' size={11} />
+                                <FontAwesomeIcon icon={faStore} color={theme.textSecondary.val} size={11} />
                                 <Text fontSize='$2' color='$textSecondary' flex={1} numberOfLines={1}>
                                     {item.merchantName || '—'}
                                     {item.merchantOrderNo ? ` · ${item.merchantOrderNo}` : ''}
@@ -150,7 +156,7 @@ const WarehouseInventoryScreen = () => {
 
                         {item.destCity && (
                             <XStack alignItems='center' space='$1.5'>
-                                <FontAwesomeIcon icon={faLocationDot} color='#999' size={11} />
+                                <FontAwesomeIcon icon={faLocationDot} color={theme.textSecondary.val} size={11} />
                                 <Text fontSize='$2' color='$textSecondary' flex={1} numberOfLines={1}>
                                     {item.destCity}
                                 </Text>
@@ -160,7 +166,7 @@ const WarehouseInventoryScreen = () => {
                         <XStack alignItems='center' space='$3' flexWrap='wrap'>
                             {item.routeCode && (
                                 <XStack alignItems='center' space='$1'>
-                                    <FontAwesomeIcon icon={faRoute} color='#999' size={11} />
+                                    <FontAwesomeIcon icon={faRoute} color={theme.textSecondary.val} size={11} />
                                     <Text fontSize='$2' color='$textSecondary'>
                                         {item.routeCode}
                                     </Text>
@@ -168,7 +174,7 @@ const WarehouseInventoryScreen = () => {
                             )}
                             {(item.packageCount != null || item.weightLbs != null) && (
                                 <XStack alignItems='center' space='$1'>
-                                    <FontAwesomeIcon icon={faBoxesStacked} color='#999' size={11} />
+                                    <FontAwesomeIcon icon={faBoxesStacked} color={theme.textSecondary.val} size={11} />
                                     <Text fontSize='$2' color='$textSecondary'>
                                         {item.packageCount != null ? `${item.packageCount} 件` : ''}
                                         {item.weightLbs != null ? ` · ${item.weightLbs} lbs` : ''}

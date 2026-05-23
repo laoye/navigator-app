@@ -6,6 +6,7 @@ import { Button, Input, Spinner, Text, YStack } from 'tamagui';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useWarehouseAuth } from '../contexts/WarehouseAuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import useAppTheme from '../hooks/use-app-theme';
 
 /**
  * 仓库员工登录页：邮箱 + 密码 → 调 ForBox `/int/v1/forbox/ops/auth/login`。
@@ -20,6 +21,7 @@ const WarehouseLoginScreen = () => {
     const windowHeight = Dimensions.get('window').height;
     const { loginWarehouse, setActiveRole } = useWarehouseAuth();
     const { t } = useLanguage();
+    const { isDarkMode } = useAppTheme();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -68,6 +70,7 @@ const WarehouseLoginScreen = () => {
                                 autoCapitalize='none'
                                 keyboardType='email-address'
                                 placeholder={t('WarehouseLoginScreen.emailPlaceholder')}
+                                placeholderTextColor={isDarkMode ? '$gray-500' : '$gray-400'}
                                 editable={!submitting}
                             />
                         </YStack>
@@ -82,6 +85,7 @@ const WarehouseLoginScreen = () => {
                                 onChangeText={setPassword}
                                 secureTextEntry
                                 placeholder={t('WarehouseLoginScreen.passwordPlaceholder')}
+                                placeholderTextColor={isDarkMode ? '$gray-500' : '$gray-400'}
                                 editable={!submitting}
                             />
                         </YStack>

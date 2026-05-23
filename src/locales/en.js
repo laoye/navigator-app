@@ -24,6 +24,10 @@ export default {
     select: 'Select',
     storefront: 'Storefront',
     tryAgain: 'Try Again',
+    errors: {
+      fleetbaseHostNotConfigured: 'Server connection is not configured',
+      loadFailed: 'Failed to load. Please try again.',
+    },
   },
   AccountScreen: {
     account: 'Account',
@@ -52,6 +56,7 @@ export default {
     profilePhoto: 'Profile Photo',
     signOut: 'Sign Out',
     signedOut: 'Signed out.',
+    switchToWarehouse: 'Switch to Warehouse',
     termsOfService: 'Terms of Service',
     theme: 'Theme',
     tracking: 'Tracking',
@@ -593,6 +598,7 @@ export default {
     signOut: 'Log Out',
     confirmSignOut: 'Log out and return to role selection?',
     signOutConfirm: 'Log out',
+    switchToDriver: 'Switch to Driver',
     roleAdmin: 'Administrator',
     roleWarehouse: 'Warehouse',
   },

@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, Spinner, Text, XStack, YStack } from 'tamagui';
+import { Button, Spinner, Text, XStack, YStack, useTheme } from 'tamagui';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import {
     faArrowLeft,
@@ -31,6 +31,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useConfig } from '../../contexts/ConfigContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import useAppTheme from '../../hooks/use-app-theme';
 import {
     fetchOrderDetail,
     type OrderDetail,
@@ -87,6 +88,8 @@ const WarehouseOrderDetailScreen = () => {
     const { resolveConnectionConfig } = useConfig();
     const { t } = useLanguage();
     const insets = useSafeAreaInsets();
+    const theme = useTheme();
+    const { isDarkMode } = useAppTheme();
     const id = route.params?.id;
 
     const [order, setOrder] = useState<OrderDetail | null>(null);
@@ -109,7 +112,7 @@ const WarehouseOrderDetailScreen = () => {
             setOrder(data);
             setError(null);
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'load failed');
+            setError(err instanceof Error ? err.message : t('common.errors.loadFailed'));
         } finally {
             setLoading(false);
         }
@@ -150,7 +153,7 @@ const WarehouseOrderDetailScreen = () => {
                     size='$3'
                     chromeless
                     onPress={() => navigation.goBack()}
-                    icon={<FontAwesomeIcon icon={faArrowLeft} color='#888' size={16} />}
+                    icon={<FontAwesomeIcon icon={faArrowLeft} color={theme.textSecondary.val} size={16} />}
                 />
                 <YStack ml='$2' flex={1}>
                     <Text fontSize='$6' fontWeight='800' color='$textPrimary' numberOfLines={1}>
@@ -188,8 +191,8 @@ const WarehouseOrderDetailScreen = () => {
                     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
                 >
                     {error && (
-                        <YStack p='$3' bg='$red-100' borderRadius='$3' mb='$3'>
-                            <Text color='$red-700'>{error}</Text>
+                        <YStack p='$3' bg={isDarkMode ? '$red-900' : '$red-100'} borderRadius='$3' mb='$3'>
+                            <Text color={isDarkMode ? '$red-200' : '$red-700'}>{error}</Text>
                         </YStack>
                     )}
 
@@ -264,7 +267,7 @@ const WarehouseOrderDetailScreen = () => {
                                         )}
                                         {dropoff.street1 && (
                                             <XStack alignItems='flex-start' space='$2'>
-                                                <FontAwesomeIcon icon={faLocationDot} color='#999' size={12} />
+                                                <FontAwesomeIcon icon={faLocationDot} color={theme.textSecondary.val} size={12} />
                                                 <Text fontSize='$3' color='$textSecondary' flex={1}>
                                                     {dropoff.street1}
                                                 </Text>
@@ -355,7 +358,7 @@ const WarehouseOrderDetailScreen = () => {
                                                 <TouchableOpacity
                                                     key={p.uuid}
                                                     onPress={() => setPreviewIndex(idx)}
-                                                    style={styles.thumbWrap}
+                                                    style={[styles.thumbWrap, { backgroundColor: theme.surface.val }]}
                                                 >
                                                     <Image source={{ uri: p.file_url ?? '' }} style={styles.thumb} />
                                                 </TouchableOpacity>
@@ -408,7 +411,7 @@ const WarehouseOrderDetailScreen = () => {
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
     return (
         <YStack
-            bg='$backgroundStrong'
+            bg='$surface'
             borderRadius='$4'
             borderWidth={1}
             borderColor='$borderColor'
@@ -431,11 +434,12 @@ function InfoRow({
     value: string | number | null | undefined;
     icon: any;
 }) {
+    const theme = useTheme();
     if (value == null || value === '') return null;
     return (
         <XStack py='$1.5' alignItems='center'>
             <View style={{ width: 20, alignItems: 'center', marginRight: 8 }}>
-                <FontAwesomeIcon icon={icon} color='#9ca3af' size={12} />
+                <FontAwesomeIcon icon={icon} color={theme.textSecondary.val} size={12} />
             </View>
             <Text fontSize='$3' color='$textSecondary' width={84}>
                 {label}
@@ -454,6 +458,9 @@ function Timeline({
     items: { uuid: string; status: string; details?: string | null; created_at: string }[];
     t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
+    const theme = useTheme();
+    const { isDarkMode } = useAppTheme();
+    const inactiveDot = isDarkMode ? theme['$gray-600'].val : '#d1d5db';
     const sorted = [...items].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     return (
         <YStack space='$2'>
@@ -464,7 +471,7 @@ function Timeline({
                             width: 10,
                             height: 10,
                             borderRadius: 5,
-                            backgroundColor: i === 0 ? statusColor(s.status) : '#d1d5db',
+                            backgroundColor: i === 0 ? statusColor(s.status) : inactiveDot,
                             marginTop: 6,
                         }}
                     />
@@ -478,7 +485,7 @@ function Timeline({
                             </Text>
                         )}
                         <XStack alignItems='center' space='$1' mt={2}>
-                            <FontAwesomeIcon icon={faClock} color='#999' size={10} />
+                            <FontAwesomeIcon icon={faClock} color={theme.textSecondary.val} size={10} />
                             <Text fontSize='$2' color='$textSecondary'>
                                 {fmtDateTime(s.created_at)}
                             </Text>

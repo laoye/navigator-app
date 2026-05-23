@@ -7,33 +7,17 @@ import WarehouseNavigator from './WarehouseNavigator';
 import PickupChecklistScreen from '../screens/PickupChecklistScreen';
 import WarehouseListScreen from '../screens/warehouse/WarehouseListScreen';
 import WarehouseOrderDetailScreen from '../screens/warehouse/WarehouseOrderDetailScreen';
-import { useIsAuthenticated } from '../contexts/AuthContext';
-import { useIsWarehouseAuthenticated, useActiveRole } from '../contexts/WarehouseAuthContext';
+import { useShouldShowDriverApp, useShouldShowWarehouseApp } from './guards';
 import AppLayout from '../layouts/AppLayout';
 
 /**
- * 顶层渲染分流：
+ * 顶层渲染分流（守卫定义见 navigation/guards.ts，与 Boot 入口决议共用同一真相源）：
  *   - driver 已登录 → DriverNavigator
  *   - 仓库员工已登录 OR activeRole=warehouse → WarehouseNavigator
- *   - 都未登录 + 未选角色 → AuthStack 内 RoleSelect（见 AuthStack 决议 hook）
+ *   - 都未登录 + 未选角色 → AuthStack 内 RoleSelect
  *   - 都未登录 + 已选 driver → AuthStack 内 PhoneLogin
  *   - 都未登录 + 已选 warehouse → AuthStack 内 WarehouseLogin
  */
-
-const useShouldShowDriverApp = () => {
-    const isDriverAuth = useIsAuthenticated();
-    const isWarehouseAuth = useIsWarehouseAuthenticated();
-    // 司机登录优先；如果两边都登录了（极端情况），按 activeRole 决定，否则 driver
-    const role = useActiveRole();
-    if (isWarehouseAuth && role === 'warehouse') return false;
-    return isDriverAuth;
-};
-
-const useShouldShowWarehouseApp = () => {
-    const isWarehouseAuth = useIsWarehouseAuthenticated();
-    const role = useActiveRole();
-    return isWarehouseAuth && role !== 'driver';
-};
 
 const RootStack = createNativeStackNavigator({
     initialRouteName: 'Boot',

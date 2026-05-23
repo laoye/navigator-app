@@ -1,28 +1,23 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { Platform } from 'react-native';
-import { check, request, PERMISSIONS, RESULTS } from 'react-native-permissions';
-import { Image, Spinner, XStack, Text, YStack, useTheme } from 'tamagui';
+import { check, PERMISSIONS, RESULTS } from 'react-native-permissions';
+import { Image, Spinner, XStack, YStack } from 'tamagui';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'react-native-linear-gradient';
-import { setI18nConfig } from '../utils/localize';
 import { config, toArray, isArray, later } from '../utils';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useAuth } from '../contexts/AuthContext';
-import { useActiveRole, useIsWarehouseAuthenticated } from '../contexts/WarehouseAuthContext';
+import { useResolvedRootRoute } from '../navigation/guards';
 import useFleetbase from '../hooks/use-fleetbase';
 import BootSplash from 'react-native-bootsplash';
 import SetupWarningScreen from './SetupWarningScreen';
 
-const APP_NAME = config('APP_NAME');
 const BootScreen = ({ route }) => {
     const params = route.params ?? {};
-    const theme = useTheme();
     const navigation = useNavigation();
     const { hasFleetbaseConfig } = useFleetbase();
-    const { isAuthenticated } = useAuth();
-    const isWarehouseAuth = useIsWarehouseAuthenticated();
-    const role = useActiveRole();
+    // 启动后该进哪个屏幕由 guards 统一决议（与 AppNavigator / AuthStack 的 `if` 守卫同源）
+    const target = useResolvedRootRoute();
     const { t } = useLanguage();
     const [error, setError] = useState<Error | null>(null);
     const backgroundColor = toArray(config('BOOTSCREEN_BACKGROUND_COLOR', '$background'));
@@ -56,18 +51,11 @@ const BootScreen = ({ route }) => {
                 try {
                     later(() => {
                         try {
-                            // Any initialization processes will run here
-                            if (isAuthenticated) {
-                                navigation.navigate('DriverNavigator');
-                            } else if (isWarehouseAuth) {
-                                navigation.navigate('WarehouseNavigator');
-                            } else if (role === 'driver') {
-                                navigation.navigate('PhoneLogin');
-                            } else if (role === 'warehouse') {
-                                navigation.navigate('WarehouseLogin');
-                            } else {
-                                navigation.navigate('RoleSelect');
-                            }
+                            // 入口屏幕由 useResolvedRootRoute() 统一决议（与 AppNavigator /
+                            // AuthStack 的 `if` 守卫共用 navigation/guards 里的同一组谓词），
+                            // 因此 target 对应屏幕的 `if` 必为 true，不会再出现
+                            // "NAVIGATE ... was not handled by any navigator" 而卡在 Boot。
+                            navigation.navigate(target);
                         } catch (err) {
                             console.warn('Failed to navigate to screen:', err);
                         }
@@ -80,7 +68,7 @@ const BootScreen = ({ route }) => {
             };
 
             checkLocationPermission();
-        }, [navigation, isAuthenticated, isWarehouseAuth, role])
+        }, [navigation, target])
     );
 
     if (error) {

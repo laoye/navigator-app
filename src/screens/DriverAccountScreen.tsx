@@ -5,13 +5,13 @@ import { Spinner, Avatar, Text, YStack, XStack, Separator, Button, useTheme } fr
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { toast, ToastPosition } from '@backpackapp-io/react-native-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faChevronRight } from '@fortawesome/free-solid-svg-icons';
+import { faChevronRight, faWarehouse } from '@fortawesome/free-solid-svg-icons';
 import { showActionSheet, abbreviateName } from '../utils';
 import { titleize } from '../utils/format';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useWarehouseAuth } from '../contexts/WarehouseAuthContext';
 import useAppTheme from '../hooks/use-app-theme';
+import useRoleSwitch from '../hooks/use-role-switch';
 import DeviceInfo from 'react-native-device-info';
 import storage from '../utils/storage';
 
@@ -20,8 +20,8 @@ const DriverAccountScreen = () => {
     const navigation = useNavigation();
     const { t, language, languages, setLocale } = useLanguage();
     const { userColorScheme, appTheme, changeScheme, schemes, isDarkMode } = useAppTheme();
-    const { driver, logout, isSigningOut, updateDriver } = useAuth();
-    const { setActiveRole } = useWarehouseAuth();
+    const { driver, isSigningOut, updateDriver } = useAuth();
+    const { switchToWarehouse, signOutDriver } = useRoleSwitch();
     const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
     const handleClearCache = () => {
@@ -45,10 +45,15 @@ const DriverAccountScreen = () => {
     };
 
     const handleSignout = () => {
-        logout();
-        // 与 Warehouse 退出一致：清掉 activeRole，下次进入应用回到 RoleSelect。
-        setActiveRole(null);
+        // 仅退司机端：若仓库端仍登录则自动切过去，否则回 RoleSelect（见 useRoleSwitch）。
+        // 同时会把司机置离线。
+        signOutDriver();
         toast.success(t('AccountScreen.signedOut'));
+    };
+
+    const handleSwitchToWarehouse = () => {
+        // 切到仓库端：先置司机离线再切 activeRole；仓库端未登录会自动落到 WarehouseLogin。
+        switchToWarehouse();
     };
 
     const handleOpenTermsOfService = async () => {
@@ -348,8 +353,24 @@ const DriverAccountScreen = () => {
                             showsHorizontalScrollIndicator={false}
                         />
                     </YStack>
-                    <YStack padding='$4' mb='$5'>
-                        <Button marginTop='$4' bg='$error' borderWidth={1} borderColor='$errorBorder' size='$5' onPress={handleSignout} rounded width='100%'>
+                    <YStack padding='$4' mb='$5' space='$3'>
+                        <Button
+                            bg='$surface'
+                            borderWidth={1}
+                            borderColor='$borderColor'
+                            size='$5'
+                            onPress={handleSwitchToWarehouse}
+                            rounded
+                            width='100%'
+                        >
+                            <Button.Icon>
+                                <FontAwesomeIcon icon={faWarehouse} color={theme.textSecondary.val} size={16} />
+                            </Button.Icon>
+                            <Button.Text color='$textPrimary' fontWeight='bold'>
+                                {t('AccountScreen.switchToWarehouse')}
+                            </Button.Text>
+                        </Button>
+                        <Button bg='$error' borderWidth={1} borderColor='$errorBorder' size='$5' onPress={handleSignout} rounded width='100%'>
                             <Button.Icon>{isSigningOut ? <Spinner color={theme['$errorText'].val} /> : <YStack />}</Button.Icon>
                             <Button.Text color='$errorText' fontWeight='bold'>
                                 {t('AccountScreen.signOut')}
