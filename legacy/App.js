@@ -2,7 +2,6 @@ import { Order } from '@fleetbase/sdk';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useFleetbase } from 'hooks';
-import type { Node } from 'react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Linking, Text, View } from 'react-native';
 import 'react-native-gesture-handler';
@@ -29,7 +28,7 @@ const success = [];
 
 const { emit } = EventRegister;
 
-const App: () => Node = () => {
+const App = () => {
     const [setDriver] = useDriver();
     const navigationRef = useRef();
     const [isLoading, setLoading] = useState(true);
