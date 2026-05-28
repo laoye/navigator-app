@@ -82,7 +82,7 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
     
-    namespace "com.forboxexpress.driver"
+    namespace "com.forboxexpress.staff"
     defaultConfig {
         applicationId project.env.get("APP_IDENTIFIER")
         minSdkVersion rootProject.ext.minSdkVersion
@@ -93,7 +93,7 @@ android {
         manifestPlaceholders = [
             appLinkScheme: project.env.get("APP_LINK_PREFIX") ?: "flbnavigator"
         ]
-        resValue "string", "build_config_package", "com.forboxexpress.driver"
+        resValue "string", "build_config_package", "com.forboxexpress.staff"
     }
     signingConfigs {
         release {

@@ -1,4 +1,4 @@
-package com.forboxexpress.driver
+package com.forboxexpress.staff
 
 import android.os.Bundle
 import com.facebook.react.ReactActivity
