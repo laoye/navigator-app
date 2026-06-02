@@ -177,32 +177,77 @@ ANDROID_NAVIGATOR_APP_UPLOAD_KEY_PASSWORD=<key密码>
 
 ## 6. 每台构建机/开发机首次拉代码后要做的
 
-`.env` 和 `android/app/google-services.json` 是 **gitignored** 的,需要每台机器各自配:
+项目用 `react-native-config`,通过 **`ENVFILE` 环境变量** 决定加载哪个 `.env` 文件 —— 同一份 `build.gradle` / Xcode 工程,**只换 `ENVFILE` 就能切环境**。本仓库分两套:
 
-1. **`.env`** —— 从 `.env.example` 复制一份并补齐:
-   ```
-   APP_NAME=ForBox Staff
-   APP_IDENTIFIER=com.forboxexpress.staff
-   APP_LINK_PREFIX=forboxstaff
-   FLEETBASE_HOST=<你的后端 URL,例: https://api.forboxexpress.com>
-   FLEETBASE_KEY=<对应环境的 API key>
-   GOOGLE_MAPS_API_KEY=<Maps key>
-   DEFAULT_COORDINATES=<经纬度,例: 1.369,103.8864>
-   FACEBOOK_APP_ID=0
-   FACEBOOK_CLIENT_TOKEN=placeholder
-   TRANSISTORSOFT_LICENSE_KEY=<react-native-background-geolocation license,有就填>
-   ```
-2. **`android/app/google-services.json`** —— 从 Firebase Console 下载(见第 1 节)
-3. **iOS:** macOS 上 `cd ios && bundle exec pod install`(或 `yarn pod:install`)
-4. **首次构建前清旧缓存:**
-   ```bash
-   cd android && ./gradlew clean
-   ```
-   旧的 `android/app/build/` 里残留了 `com.forboxexpress.driver` 字符串,不清会编译失败。
+| 文件 | 用途 | 跟踪 | 何时被读 |
+|---|---|---|---|
+| `.env` | 本地开发(默认) | gitignored | `yarn android` / `yarn ios` |
+| `.env.production` | 上架/内测分发 | gitignored | `yarn android:release` / `yarn bundle:android` / `yarn ios:release` |
+| `.env.example` | dev 模板 | tracked | 新人 `cp` 一份作 `.env` 起点 |
+| `.env.production.example` | prod 模板 | tracked | 打包机 `cp` 一份作 `.env.production` 起点 |
+
+`android/app/google-services.json` 也是 gitignored,每台机器各自从 Firebase Console 下载(见第 1 节)。
+
+### 6.1 dev(本机开发)
+```bash
+cp .env.example .env
+# 编辑 .env:
+#   FLEETBASE_HOST=http://10.0.2.2:8088    (Android emulator → 宿主机 docker)
+#                  / http://localhost:8088 (iOS simulator)
+#   FLEETBASE_KEY=<本地 docker fleetbase 里发的 dev API key>
+#   GOOGLE_MAPS_API_KEY=<dev key>
+```
+
+### 6.2 prod(打包机 / CI)
+```bash
+cp .env.production.example .env.production
+# 编辑 .env.production:
+#   FLEETBASE_HOST=https://<线上后端 URL>
+#   FLEETBASE_KEY=<flb_live_xxx,线上 API credential>
+#   GOOGLE_MAPS_API_KEY=<给 release 单独签的 key,限制到 com.forboxexpress.staff>
+#   TRANSISTORSOFT_LICENSE_KEY=<transistorsoft 后台为 com.forboxexpress.staff 签的 prod license>
+```
+
+### 6.3 两种环境共同要做的
+- macOS 上 `cd ios && bundle exec pod install`(或 `yarn pod:install`)
+- 首次构建前清旧缓存:`cd android && ./gradlew clean`
+  _(旧的 `android/app/build/` 残留 `com.forboxexpress.driver` 字符串,不清会编译撞包名失败。)_
 
 ---
 
-## 7. 工作顺序与关键路径
+## 7. 打 release 包
+
+Release build 必须走 `.env.production` —— 默认 `.env` 指 `10.0.2.2:8088`,真机/真用户访问不到。yarn 脚本已通过 `scripts/with-env.js` 自动注入 `ENVFILE`:
+
+| 命令 | 输出 | 用途 |
+|---|---|---|
+| `yarn android:release` | `android/app/build/outputs/apk/release/app-release.apk` | APK,扔给测试用户直接侧载 |
+| `yarn bundle:android` | `android/app/build/outputs/bundle/release/app-release.aab` | AAB,传 Play Console 内部测试轨 |
+| `yarn ios:release` | 装到当前连接的设备/模拟器,Release 配置 | 本地真机验证 release |
+
+### 7.1 Xcode GUI archive(给 TestFlight 上传 .ipa)
+
+Xcode 不会从 shell 继承 `ENVFILE`,需要在 Scheme 里固化:
+
+1. Xcode → Product → Scheme → Edit Scheme → 选 Run → Arguments → Environment Variables
+2. 加一行 `ENVFILE = .env.production`,左边 checkbox 勾上
+3. 顺便 Archive 项里勾 "use the Run action's arguments and environment variables"(避免 archive 不读这条)
+4. 或命令行 archive:
+   ```bash
+   xcodebuild -workspace ios/NavigatorApp.xcworkspace \
+              -scheme NavigatorApp \
+              -configuration Release \
+              ENVFILE=.env.production \
+              archive -archivePath ./build/ForBoxStaff.xcarchive
+   ```
+
+### 7.2 CI 构建
+
+在 workflow step 上设环境变量 `ENVFILE: .env.production`(或 `export ENVFILE=...`),然后跑同样的 gradle / xcodebuild 命令。`with-env.js` 中转只是给本地 yarn 用,CI 直接走原生环境变量即可。
+
+---
+
+## 8. 工作顺序与关键路径
 
 ```
 Apple Developer 账号申请    ← 关键路径(公司账号 1~2 周 D-U-N-S 审批)
@@ -218,14 +263,15 @@ Play Console 账号($25,当天开通)
 (并行)Firebase Console 加 Android app → 替换本地 google-services.json
 (并行)生成 Android upload keystore + 配 gradle properties
 (并行)Xcode 切 Team / 自动签名
+(并行)填 `.env.production` 内的线上 host / key / maps key / transistor license
 ```
 
 iOS 关键路径是 Apple Developer 账号(尤其公司账号),**先提交申请**。其他步骤可以并行。
 
 ---
 
-## 8. 在 ForBox 部署下**不需要做**的事(避免踩坑浪费时间)
+## 9. 在 ForBox 部署下**不需要做**的事(避免踩坑浪费时间)
 
-- ❌ **不用** 在 fleetbase 后端配 `NAVIGATOR_APP_IDENTIFIER` / 改 `NavigatorController` —— ForBox 员工不走"扫码配置"流程,后端 host/key 在构建期就烤进 `.env`(参见 `e097144` 提交描述)
+- ❌ **不用** 在 fleetbase 后端配 `NAVIGATOR_APP_IDENTIFIER` / 改 `NavigatorController` —— ForBox 员工不走"扫码配置"流程,后端 host/key 在构建期就烤进 `.env.production`(参见 `e097144` 提交描述)
 - ❌ **不用** 在 Firebase 给 iOS 加 app —— 当前 iOS 推送走 APNs,不经过 Firebase
 - ❌ **不用** 在 Apple Developer 上注册 UDID —— TestFlight 不需要(只有 Ad-hoc 才需要)
