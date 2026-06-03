@@ -1,4 +1,4 @@
-package com.forboxexpress.staff
+package com.forboxexpress.app
 
 import android.app.Application
 import com.facebook.react.PackageList

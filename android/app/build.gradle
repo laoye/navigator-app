@@ -82,18 +82,18 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
     
-    namespace "com.forboxexpress.staff"
+    namespace "com.forboxexpress.app"
     defaultConfig {
         applicationId project.env.get("APP_IDENTIFIER")
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode project.env.get("ANDROID_VERSION_CODE")?.toInteger() ?: 1
         versionName project.env.get("ANDROID_VERSION_NAME") ?: "1.0.0"
-        missingDimensionStrategy 'react-native-camera', 'general' 
+        missingDimensionStrategy 'react-native-camera', 'general'
         manifestPlaceholders = [
             appLinkScheme: project.env.get("APP_LINK_PREFIX") ?: "flbnavigator"
         ]
-        resValue "string", "build_config_package", "com.forboxexpress.staff"
+        resValue "string", "build_config_package", "com.forboxexpress.app"
     }
     signingConfigs {
         release {

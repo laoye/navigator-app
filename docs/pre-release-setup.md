@@ -1,6 +1,6 @@
 # 上线/内测前置准备清单
 
-本文档列出 ForBox Staff App **首次**走出 dev 环境(往 TestFlight / Play 内部测试 / 公测分发)之前,**代码外**必须在各家平台控制台完成的配置步骤,以及每一步要填的具体字段。
+本文档列出 ForBox App **首次**走出 dev 环境(往 TestFlight / Play 内部测试 / 公测分发)之前,**代码外**必须在各家平台控制台完成的配置步骤,以及每一步要填的具体字段。
 
 > **不在本文档范围:** 代码层面的改动(bundle ID / 显示名 / 深链等已在 `e097144` 提交中完成);后续的版本发布操作流程;后端 Fleetbase 的部署。
 
@@ -12,9 +12,9 @@
 
 | 项 | 值 |
 |---|---|
-| Bundle ID / Android `applicationId` | `com.forboxexpress.staff` |
-| Display name | `ForBox Staff` |
-| URL Scheme(深链) | `forboxstaff` |
+| Bundle ID / Android `applicationId` | `com.forboxexpress.app` |
+| Display name | `ForBox` |
+| URL Scheme(深链) | `forbox` |
 | iOS 最低版本 | iOS 15.1(`IPHONEOS_DEPLOYMENT_TARGET = 15.1`) |
 | iOS 类目 | Navigation(`public.app-category.navigation`) |
 | 当前 marketing version | 2.0.5 |
@@ -33,8 +33,8 @@
 2. 填写:
    | 字段 | 值 |
    |---|---|
-   | Android package name | `com.forboxexpress.staff` |
-   | App nickname(任意,只是控制台展示) | `ForBox Staff (Android)` |
+   | Android package name | `com.forboxexpress.app` |
+   | App nickname(任意,只是控制台展示) | `ForBox (Android)` |
    | Debug signing certificate SHA-1 | **留空**(只用 FCM 不需要;若以后加 Google Sign-In / Dynamic Links 才补) |
 3. **下载** 生成的新 `google-services.json` → **替换** 本地 `android/app/google-services.json`(它是 gitignored,每台构建机各自维护)
 4. 旧的 `com.forboxexpress.driver` Android app 入口可以 **保留**(留作历史记录,不删也无害);如果一定要清理,Firebase 后台可以 remove。
@@ -54,14 +54,14 @@
 2. 填:
    | 字段 | 值 |
    |---|---|
-   | Description | `ForBox Staff` |
-   | Bundle ID | **Explicit**: `com.forboxexpress.staff` |
+   | Description | `ForBox` |
+   | Bundle ID | **Explicit**: `com.forboxexpress.app` |
    | Capabilities | 勾选 **Push Notifications**(必需);**Background Modes**(代码用了,但这是 Info.plist 配的,这里 App ID 不强制勾;勾上也无害) |
 3. 保存
 
 ### 2.2 APNs Auth Key(**推荐方式**——比 cert 简单,不过期)
 1. **Keys → + → Apple Push Notifications service (APNs)**
-2. Key Name: `ForBox Staff APNs`
+2. Key Name: `ForBox APNs`
 3. 下载 `.p8` 文件 → **只能下一次**,**妥善保存**(丢了只能 revoke 重生)
 4. 记下 **Key ID**(10 位字母数字)和你的 **Team ID**(在右上角账号信息里)
 5. 把这三样交给后端推送服务(.p8 内容、Key ID、Team ID + Bundle ID)
@@ -72,14 +72,14 @@
    |---|---|
    | iOS App Development | 开发期 + TestFlight 内部测试 |
    | App Store | TestFlight 外部测试 + App Store 发布 |
-2. 选刚才的 App ID `com.forboxexpress.staff`
+2. 选刚才的 App ID `com.forboxexpress.app`
 3. Development profile 还要选 Devices(注册过的 UDID)和 Certificates(开发者证书)
 4. 下载 `.mobileprovision`,Xcode 会自动安装
 
 ### 2.4 Xcode 工程里要核对的
 - 打开 `ios/NavigatorApp.xcworkspace` → Target NavigatorApp → Signing & Capabilities
 - **Team** 切到 ForBox 自己的开发者账号
-- **Bundle Identifier** 显示 `com.forboxexpress.staff`(已自动从 pbxproj 读)
+- **Bundle Identifier** 显示 `com.forboxexpress.app`(已自动从 pbxproj 读)
 - 当前 pbxproj 里写的 `DEVELOPMENT_TEAM = W4M54N7H85` 如果不是你们的 Team,**Xcode 第一次打开会报红**,在 Signing 选项里改成正确 Team,Xcode 会回写 pbxproj 并提交一次
 
 ---
@@ -95,10 +95,10 @@
    | 字段 | 值 |
    |---|---|
    | Platforms | iOS |
-   | Name | `ForBox Staff`(≤30 字符,App Store 显示名;同 Bundle Display Name) |
+   | Name | `ForBox`(≤30 字符,App Store 显示名;同 Bundle Display Name) |
    | Primary Language | English (U.S.) 或 Chinese (Simplified)——视主要用户而定 |
-   | Bundle ID | 下拉选刚才建的 `com.forboxexpress.staff` |
-   | SKU | `forbox-staff-ios`(内部识别用,任意字符串,自定一个不重复的) |
+   | Bundle ID | 下拉选刚才建的 `com.forboxexpress.app` |
+   | SKU | `forbox-app-ios`(内部识别用,任意字符串,自定一个不重复的) |
    | User Access | Full Access |
 3. 后续 App Information 表单要补(TestFlight 内部组不强制,提交 App Store 时强制):
    | 字段 | 建议值 |
@@ -125,7 +125,7 @@
 2. 填:
    | 字段 | 值 |
    |---|---|
-   | App name | `ForBox Staff`(≤30 字符) |
+   | App name | `ForBox`(≤30 字符) |
    | Default language | 视主要用户 |
    | App or game | App |
    | Free or paid | Free |
@@ -153,9 +153,9 @@
 
 ### 生成
 ```bash
-keytool -genkey -v -keystore forbox-staff-upload.jks \
+keytool -genkey -v -keystore forbox-app-upload.jks \
   -keyalg RSA -keysize 2048 -validity 10000 \
-  -alias forbox-staff-upload
+  -alias forbox-app-upload
 ```
 填 keystore 密码、key 密码、申请人信息(CN, OU, O, L, S, C)。
 
@@ -163,9 +163,9 @@ keytool -genkey -v -keystore forbox-staff-upload.jks \
 keystore 文件**不进 git**(已有 gitignore 模式覆盖)。把以下值通过环境变量或 `~/.gradle/gradle.properties` 注入:
 
 ```properties
-ANDROID_NAVIGATOR_APP_UPLOAD_STORE_FILE=/绝对路径/forbox-staff-upload.jks
+ANDROID_NAVIGATOR_APP_UPLOAD_STORE_FILE=/绝对路径/forbox-app-upload.jks
 ANDROID_NAVIGATOR_APP_UPLOAD_STORE_PASSWORD=<keystore密码>
-ANDROID_NAVIGATOR_APP_UPLOAD_KEY_ALIAS=forbox-staff-upload
+ANDROID_NAVIGATOR_APP_UPLOAD_KEY_ALIAS=forbox-app-upload
 ANDROID_NAVIGATOR_APP_UPLOAD_KEY_PASSWORD=<key密码>
 ```
 
@@ -204,8 +204,8 @@ cp .env.production.example .env.production
 # 编辑 .env.production:
 #   FLEETBASE_HOST=https://<线上后端 URL>
 #   FLEETBASE_KEY=<flb_live_xxx,线上 API credential>
-#   GOOGLE_MAPS_API_KEY=<给 release 单独签的 key,限制到 com.forboxexpress.staff>
-#   TRANSISTORSOFT_LICENSE_KEY=<transistorsoft 后台为 com.forboxexpress.staff 签的 prod license>
+#   GOOGLE_MAPS_API_KEY=<给 release 单独签的 key,限制到 com.forboxexpress.app>
+#   TRANSISTORSOFT_LICENSE_KEY=<transistorsoft 后台为 com.forboxexpress.app 签的 prod license>
 ```
 
 ### 6.3 两种环境共同要做的
@@ -238,7 +238,7 @@ Xcode 不会从 shell 继承 `ENVFILE`,需要在 Scheme 里固化:
               -scheme NavigatorApp \
               -configuration Release \
               ENVFILE=.env.production \
-              archive -archivePath ./build/ForBoxStaff.xcarchive
+              archive -archivePath ./build/ForBox.xcarchive
    ```
 
 ### 7.2 CI 构建

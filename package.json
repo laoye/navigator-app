@@ -1,12 +1,12 @@
 {
-    "name": "@forboxexpress/staff-app",
+    "name": "@forboxexpress/app",
     "version": "1.0.0",
     "license": "AGPL-3.0-or-later",
     "author": "ForBox Express",
-    "description": "ForBox Staff App - Internal staff app for ForBox Express drivers and warehouse operators.",
+    "description": "ForBox - Internal app for ForBox Express drivers and warehouse operators.",
     "private": true,
     "scripts": {
-        "android": "cd android && ./gradlew app:installDebug && cd .. && adb reverse tcp:8081 tcp:8081 && adb shell am start -n com.forboxexpress.staff/.MainActivity",
+        "android": "cd android && ./gradlew app:installDebug && cd .. && adb reverse tcp:8081 tcp:8081 && adb shell am start -n com.forboxexpress.app/.MainActivity",
         "android:release": "node scripts/with-env.js .env.production 'cd android && ./gradlew app:assembleRelease'",
         "bundle:android": "node scripts/with-env.js .env.production 'cd android && ./gradlew app:bundleRelease'",
         "ios": "react-native run-ios",
