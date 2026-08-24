@@ -298,6 +298,37 @@ Xcode 不会从 shell 继承 `ENVFILE`,需要在 Scheme 里固化:
 
 在 workflow step 上设环境变量 `ENVFILE: .env.production`(或 `export ENVFILE=...`),然后跑同样的 gradle / xcodebuild 命令。`with-env.js` 中转只是给本地 yarn 用,CI 直接走原生环境变量即可。
 
+### 7.3 Mac 打包机首次配置(iOS → TestFlight 全流程)
+
+> 代码侧发布前置(版本号 1.0.0(1)、aps production、entitlements/Info.plist 清理、
+> 隐私清单)已在 `190997c` 完成,Mac 上 pull 即得。唯一待办是 Xcode 里选实际 Team。
+
+1. **环境**:Xcode(最新稳定版,App Store 装)+ 命令行工具;Node ≥18 + yarn;Ruby bundler
+2. **拉代码**:
+   ```bash
+   git clone git@github.com:laoye/navigator-app.git && cd navigator-app
+   git checkout upgrade/rn-0.84
+   ```
+3. **手动带过去的文件**(gitignored,从 Windows 主机复制):
+   - `.env.production` → 仓库根目录(含 FLEETBASE_KEY / GOOGLE_MAPS_API_KEY / TRANSISTORSOFT_LICENSE_KEY)
+   - iOS **不需要** google-services.json(推送走 APNs 不经 Firebase)
+4. **装依赖**:
+   ```bash
+   yarn install
+   bundle install          # 装 Gemfile 里的 CocoaPods
+   yarn pod:install        # RCT_NEW_ARCH_ENABLED=1 bundle exec pod install
+   ```
+5. **Xcode 签名**:打开 `ios/NavigatorApp.xcworkspace` → target NavigatorApp →
+   Signing & Capabilities → 勾 Automatically manage signing → **Team 选 ForBox 的**
+   (会把 pbxproj 里遗留的 W4M54N7H85 替换掉,这个改动要提交回仓库)。
+   Capabilities 应只有 Push Notifications + Background Modes(已配好,不要加 Sign in with Apple)
+6. **Apple Developer 控制台**(第 2 节):App ID `com.forboxexpress.app`(Push 勾上)、
+   APNs Auth Key .p8(下载仅一次,Key ID/Team ID 一起交给后端配置推送)
+7. **Archive 上传**:按 7.1(记得 `ENVFILE=.env.production`)→ Organizer →
+   Distribute App → App Store Connect → Upload
+8. **TestFlight 验证**:内部组无需审核,~30 分钟可装。重点验:邮箱登录连生产、
+   后台定位追踪、推送 token 注册、新品牌图标/启动屏
+
 ---
 
 ## 8. 工作顺序与关键路径
