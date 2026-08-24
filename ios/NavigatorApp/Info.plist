@@ -54,25 +54,6 @@
 	<string>$(GOOGLE_IOS_CLIENT_ID)</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
-		<string>qpaywallet</string>
-		<string>khanbank</string>
-		<string>statebankmongolia</string>
-		<string>xacbank</string>
-		<string>tdbbank</string>
-		<string>socialpay-payment</string>
-		<string>most</string>
-		<string>nibank</string>
-		<string>ckbank</string>
-		<string>capitronbank</string>
-		<string>bogdbank</string>
-		<string>transbank</string>
-		<string>mbank</string>
-		<string>ard</string>
-		<string>arig</string>
-		<string>Monpay</string>
-		<string>fbapi</string>
-		<string>fbauth2</string>
-		<string>fb-messenger-share-api</string>
 		<string>comgooglemaps</string>
 		<string>citymapper</string>
 		<string>uber</string>
@@ -105,20 +86,6 @@
 		<true/>
 		<key>NSExceptionDomains</key>
 		<dict>
-			<key>fleetbase.engineering</key>
-			<dict>
-				<key>NSExceptionAllowsInsecureHTTPLoads</key>
-				<false/>
-				<key>NSIncludesSubdomains</key>
-				<true/>
-			</dict>
-			<key>fleetbase.io</key>
-			<dict>
-				<key>NSExceptionAllowsInsecureHTTPLoads</key>
-				<false/>
-				<key>NSIncludesSubdomains</key>
-				<true/>
-			</dict>
 			<key>localhost</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
@@ -133,19 +100,17 @@
 	<key>NSLocalUsageDescription</key>
 	<string>This app requires access to send you notifications about order status updates and other important information.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Navigator uses your location even when the app is in the background to keep your navigation and task data up-to-date.</string>
+	<string>ForBox uses your location even when the app is in the background so dispatch can track delivery progress in real time.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Navigator requires access to your location at all times to track your position in the background for accurate navigation and task updates.</string>
+	<string>ForBox requires access to your location at all times to track your position in the background for accurate delivery tracking.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Navigator needs your location to provide navigation and task management features while you are using the app.</string>
+	<string>ForBox needs your location to provide navigation and delivery task features while you are using the app.</string>
 	<key>NSMotionUsageDescription</key>
-	<string>Navigator uses motion data to enhance navigation and track physical activity for improved task management.</string>
+	<string>ForBox uses motion data to make background location tracking battery-efficient.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>This app allows you to download photos to your photo library</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app allows you to upload photos from your photo library</string>
-	<key>NSUserAuthenticationUsageDescription</key>
-	<string>Sign in with Apple is used to authenticate your account.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIBackgroundModes</key>
