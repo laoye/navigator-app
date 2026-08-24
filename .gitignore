@@ -102,3 +102,4 @@ android/app/build/
 
 # Claude Code
 .claude/
+*.jks
