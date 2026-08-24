@@ -53,10 +53,11 @@ export const useShouldShowDriverEntry = (): boolean => {
  * 每个分支都与上面对应的守卫一一对应、按优先级短路，因此返回值对应屏幕的 `if` 必为 true，
  * Boot navigate(target) 不会再出现 "not handled by any navigator"。
  *
- * 注意：司机登录流有多个共享 useShouldShowDriverEntry 守卫的屏幕，这里显式选 PhoneLogin
- * 作为入口（SMS 主路径），其余 EmailLogin / CreateAccount 等由 PhoneLogin 内导航进入。
+ * 注意：司机登录流有多个共享 useShouldShowDriverEntry 守卫的屏幕，这里显式选 EmailLogin
+ * 作为入口（生产未接短信服务，司机账号由公司后台开通并用邮箱+密码登录；
+ * PhoneLogin/CreateAccount 路由保留，接通短信后把入口改回去即可）。
  */
-export type RootEntryRoute = 'DriverNavigator' | 'WarehouseNavigator' | 'PhoneLogin' | 'WarehouseLogin' | 'RoleSelect';
+export type RootEntryRoute = 'DriverNavigator' | 'WarehouseNavigator' | 'EmailLogin' | 'WarehouseLogin' | 'RoleSelect';
 
 export const useResolvedRootRoute = (): RootEntryRoute => {
     const showDriverApp = useShouldShowDriverApp();
@@ -66,7 +67,7 @@ export const useResolvedRootRoute = (): RootEntryRoute => {
 
     if (showDriverApp) return 'DriverNavigator';
     if (showWarehouseApp) return 'WarehouseNavigator';
-    if (showDriverEntry) return 'PhoneLogin';
+    if (showDriverEntry) return 'EmailLogin';
     if (showWarehouseLogin) return 'WarehouseLogin';
     return 'RoleSelect';
 };

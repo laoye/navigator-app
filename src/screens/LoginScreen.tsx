@@ -8,7 +8,7 @@ import { faPlug } from '@fortawesome/free-solid-svg-icons';
 import { toast, ToastPosition } from '@backpackapp-io/react-native-toast';
 import { titleize } from '../utils/format';
 import { navigatorConfig } from '../utils';
-import { PhoneLoginButton, AppleLoginButton, FacebookLoginButton, GoogleLoginButton } from '../components/Buttons';
+import { EmailLoginButton } from '../components/Buttons';
 import useOAuth from '../hooks/use-oauth';
 import LinearGradient from 'react-native-linear-gradient';
 import DeviceInfo from 'react-native-device-info';
@@ -20,8 +20,10 @@ const LoginScreen = () => {
     const windowHeight = Dimensions.get('window').height;
     const { login, loginSupported, loading } = useOAuth();
 
-    const handlePhoneLogin = () => {
-        navigation.navigate('PhoneLogin');
+    // 生产未接短信服务,司机账号由公司后台开通:登录主路径为邮箱+密码。
+    // PhoneLogin/CreateAccount 路由保留,接通短信后可恢复入口。
+    const handleEmailLogin = () => {
+        navigation.navigate('EmailLogin');
     };
 
     const handleOAuthLogin = async (provider) => {
@@ -45,7 +47,7 @@ const LoginScreen = () => {
             </YStack>
             <SafeAreaView style={{ flex: 1 }}>
                 <YStack flex={1} justifyContent='flex-end' alignItems='center' space='$3' px='$5' pb='$6'>
-                    <PhoneLoginButton onPress={handlePhoneLogin} />
+                    <EmailLoginButton onPress={handleEmailLogin} />
                     <Text color='$textSecondary' fontSize='$2'>
                         v{DeviceInfo.getVersion()} #{DeviceInfo.getBuildNumber()}
                     </Text>

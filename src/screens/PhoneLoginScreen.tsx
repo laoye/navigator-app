@@ -47,10 +47,6 @@ const PhoneLoginScreen = () => {
         navigation.navigate('EmailLogin');
     };
 
-    const handleCreateAccount = () => {
-        navigation.navigate('CreateAccount');
-    };
-
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: navigatorConfig('colors.loginBackground') }}>
             <LinearGradient colors={['rgba(0, 0, 0, 0.0)', 'rgba(0, 0, 0, 0.4)', 'rgba(0, 0, 0, 0.8)']} style={StyleSheet.absoluteFillObject} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} />

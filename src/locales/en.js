@@ -75,6 +75,7 @@ export default {
   },
   Buttons: {
     continueWithPhone: 'Continue with Phone',
+    continueWithEmail: 'Continue with Email',
   },
   BootScreen: {
     missingRequiredConfigurationKeys: 'Missing required configuration keys.',
@@ -185,7 +186,7 @@ export default {
   DriverNavigator: {
     createANewFuelReport: 'Create a new Fuel Report',
     createANewIssue: 'Create a new Issue',
-    navigator: 'Navigator',
+    navigator: 'ForBox',
     dashboard: 'Dash',
     orders: 'Orders',
     reports: 'Reports',
@@ -438,6 +439,7 @@ export default {
     passwordPlaceholder: '••••••••',
     submit: 'Sign in',
     backToSms: 'Back to SMS login',
+    back: 'Back',
     invalidEmailOrPassword: 'Email or password is incorrect',
   },
   PhoneLoginVerifyScreen: {

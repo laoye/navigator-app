@@ -51,7 +51,10 @@ const WarehouseLoginScreen = () => {
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
             <YStack flex={1} bg='$background'>
                 <YStack justifyContent='center' alignItems='center' paddingTop={insets.top} marginTop={windowHeight / 8}>
-                    <Image source={require('../../assets/navigator-icon-transparent.png')} style={{ width: 60, height: 60 }} />
+                    <Image
+                        source={isDarkMode ? require('../../assets/navigator-icon-transparent.png') : require('../../assets/navigator-icon-transparent-dark.png')}
+                        style={{ width: 60, height: 60 }}
+                    />
                     <Text mt='$3' fontSize='$6' fontWeight='700' color='$textPrimary'>
                         {t('WarehouseLoginScreen.title')}
                     </Text>

@@ -82,6 +82,7 @@ export default {
         passwordPlaceholder: '••••••••',
         submit: '登录',
         backToSms: '返回短信登录',
+        back: '返回',
         invalidEmailOrPassword: '邮箱或密码错误',
     },
     PhoneLoginVerifyScreen: {
@@ -142,6 +143,7 @@ export default {
     },
     Buttons: {
         continueWithPhone: '使用手机号继续',
+        continueWithEmail: '使用邮箱登录',
     },
     CameraCapture: {
         gallery: '相册',
@@ -565,7 +567,7 @@ export default {
         account: '账户',
         createANewFuelReport: '新建加油记录',
         createANewIssue: '新建问题',
-        navigator: '司机',
+        navigator: 'ForBox',
     },
     DriverFleetScreen: {
         driverfleetscreen: '车队',

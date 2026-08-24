@@ -8,6 +8,7 @@ import { faTruck, faWarehouse, faPlug } from '@fortawesome/free-solid-svg-icons'
 import DeviceInfo from 'react-native-device-info';
 import { useWarehouseAuth } from '../contexts/WarehouseAuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
+import useAppTheme from '../hooks/use-app-theme';
 
 /**
  * 启动后第一个屏幕：让用户选择"司机"还是"仓库员工"。
@@ -24,6 +25,9 @@ const RoleSelectScreen = () => {
     const windowHeight = Dimensions.get('window').height;
     const { setActiveRole } = useWarehouseAuth();
     const { t } = useLanguage();
+    const { isDarkMode } = useAppTheme();
+    // 白字版用于深色背景,深字版用于浅色背景
+    const logoSource = isDarkMode ? require('../../assets/navigator-icon-transparent.png') : require('../../assets/navigator-icon-transparent-dark.png');
 
     // 仅切换 activeRole；RoleSelect 的 `if:` 立刻 false → 栈 pop 回 Boot →
     // BootScreen useFocusEffect 检测到 role=driver/warehouse 后自动导航到对应登录页。
@@ -44,7 +48,7 @@ const RoleSelectScreen = () => {
     return (
         <YStack flex={1} bg='$background' position='relative'>
             <YStack justifyContent='center' alignItems='center' paddingTop={insets.top} marginTop={windowHeight / 5}>
-                <Image source={require('../../assets/navigator-icon-transparent.png')} style={{ width: 80, height: 80 }} />
+                <Image source={logoSource} style={{ width: 80, height: 80 }} />
                 <Text mt='$4' fontSize='$8' fontWeight='800' color='$textPrimary'>
                     {t('RoleSelectScreen.title')}
                 </Text>

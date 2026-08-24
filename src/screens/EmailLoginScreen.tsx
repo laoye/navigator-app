@@ -1,27 +1,27 @@
 import React, { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView, KeyboardAvoidingView, Platform, StyleSheet, Image, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Input, Spinner, Text, YStack } from 'tamagui';
 import { toast } from '@backpackapp-io/react-native-toast';
 import LinearGradient from 'react-native-linear-gradient';
 import { useAuth } from '../contexts/AuthContext';
+import { useWarehouseAuth } from '../contexts/WarehouseAuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { navigatorConfig } from '../utils';
 
 /**
- * 司机邮箱密码登录（次路径）。
+ * 司机邮箱密码登录（主路径,生产未接短信服务）。
  *
- * 主路径仍是 PhoneLogin (SMS)，此屏由 PhoneLogin 底部入口 push 进来。
+ * Boot 决议后的司机登录入口屏(见 navigation/guards.ts);PhoneLogin 入口已隐藏,接通短信后可恢复。
  * 调 ForBox `/forbox/int/v1/forbox/driver/auth/login`，成功后调用
  * AuthContext.loginByEmail，复用 createDriverSession 写 `_driver_token`
  * 与 driver MMKV，进而触发 AppNavigator 切到 DriverNavigator。
  */
 const EmailLoginScreen = () => {
-    const navigation = useNavigation<any>();
     const insets = useSafeAreaInsets();
     const windowHeight = Dimensions.get('window').height;
     const { loginByEmail, isVerifyingCode } = useAuth();
+    const { setActiveRole } = useWarehouseAuth();
     const { t } = useLanguage();
 
     const [email, setEmail] = useState('');
@@ -41,7 +41,11 @@ const EmailLoginScreen = () => {
         }
     };
 
-    const handleBack = () => navigation.goBack();
+    // 本屏是司机登录入口(Boot 直接导航进来,栈底是 Boot,goBack 会被 Boot 弹回),
+    // 底部动作固定为"切换身份":清除已选角色,守卫自动回 RoleSelect。
+    const handleBack = () => {
+        setActiveRole(null);
+    };
 
     const busy = submitting || isVerifyingCode;
 
@@ -119,7 +123,7 @@ const EmailLoginScreen = () => {
 
                         <Button size='$3' onPress={handleBack} bg='transparent' disabled={busy}>
                             <Text color='$gray-400' fontSize='$3'>
-                                {t('EmailLoginScreen.backToSms')}
+                                {t('PhoneLoginScreen.switchRole')}
                             </Text>
                         </Button>
                     </YStack>

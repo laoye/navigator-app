@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from 'tamagui';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faFacebook, faInstagram, faGoogle, faApple } from '@fortawesome/free-brands-svg-icons';
-import { faPhone } from '@fortawesome/free-solid-svg-icons';
+import { faPhone, faEnvelope } from '@fortawesome/free-solid-svg-icons';
 import LinearGradient from 'react-native-linear-gradient';
 import { useTheme } from 'tamagui';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -17,6 +17,20 @@ export const PhoneLoginButton = ({ onPress, ...props }) => {
                 <FontAwesomeIcon icon={faPhone} color={theme['$textPrimary'].val} />
             </Button.Icon>
             <Button.Text color='$textPrimary'>{t('Buttons.continueWithPhone')}</Button.Text>
+        </Button>
+    );
+};
+
+export const EmailLoginButton = ({ onPress, ...props }) => {
+    const theme = useTheme();
+    const { t } = useLanguage();
+
+    return (
+        <Button onPress={onPress} bg='$subsurface' borderWidth={1} borderColor='$borderColor' width='100%' {...props} rounded>
+            <Button.Icon>
+                <FontAwesomeIcon icon={faEnvelope} color={theme['$textPrimary'].val} />
+            </Button.Icon>
+            <Button.Text color='$textPrimary'>{t('Buttons.continueWithEmail')}</Button.Text>
         </Button>
     );
 };
