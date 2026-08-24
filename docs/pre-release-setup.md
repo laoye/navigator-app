@@ -132,18 +132,69 @@
 3. 勾选 declarations(政策合规、出口加密等)
 
 ### 4.2 App content(必填表单,挡上线但不挡内部测试)
-- App access(是否需要登录) → **All functionality is available without restrictions / Some require login**(选第二项,提供测试账号)
-- Ads → No
-- Content rating → 填问卷
-- Target audience → 选目标年龄段
-- Data safety → 数据收集表(填:用户登录信息、位置、设备 ID、推送 token 等)
-- Privacy policy URL → ForBox 隐私政策
+
+> **策略:先走 4.3 内部测试轨(不要求填完这些表单),表单并行慢慢填。**
+> 另注意:**2023 年 11 月后注册的个人开发者账号**,上正式版前 Google 强制要求先做封闭测试(12 名测试员连续 14 天);组织账号无此要求。
+
+入口:**Policy → App content**,逐项填法:
+
+| 表单 | ForBox 填法 |
+|---|---|
+| Privacy policy | 填 `https://forboxexpress.com/privacy.html`(**已上线**;源码 `D:\Forbox\website\privacy.html`,部署方式见网站根目录 EC2 `/var/www/forboxexpress`)。已覆盖后台定位、设备信息、账号信息、账号删除流程(Play 强制要求) |
+| App access | 选 "All or some functionality is restricted" → 提供一个连生产环境的真实司机测试账号(用户名+密码+登录说明),审核员没账号必拒 |
+| Ads | No |
+| Content rating | 填问卷,类别选 Utility/Productivity/Communication,敏感内容全 "No",结果为 Everyone/3+ |
+| Target audience | 只勾 **18+**。勿勾任何未成年年龄段,否则触发家庭政策一整套额外要求 |
+| News app | No |
+| Data safety | 见下方单独展开 |
+| Government app | No |
+| Financial features | No(App 不提供借贷/支付类金融服务) |
+| Health | No |
+
+**Store settings**(App category & contact details):Category = App → **Maps & Navigation**(或 Business);联系邮箱必填(公开显示,用支持邮箱勿用个人邮箱)。
+
+#### Data safety 表(逐类申报,"是否共享给第三方"均选 No)
+
+| 数据类型 | 申报 |
+|---|---|
+| Location(approximate + precise) | 收集,必需,用途 App functionality;"是否在后台收集" → **Yes**(联动触发 4.4 后台定位声明) |
+| Personal info(姓名/邮箱/电话) | 收集(司机账号),用途 App functionality + Account management |
+| Photos | 收集(POD 签收拍照),用途 App functionality |
+| Device or other IDs | 收集(推送 token/设备 ID),用途 App functionality |
+| 传输是否加密 | **Yes** —— 前提:发布版必须关掉 `network_security_config.xml` 的全局 cleartext,否则属虚假申报 |
+| 用户能否请求删除数据 | Yes → 隐私政策页给出账号删除入口(邮件申请亦可) |
+
+**广告 ID:** 依赖(Firebase/GMS)会合并进 `AD_ID` 权限。本 App 不投广告,推荐在 `AndroidManifest.xml` 移除后申报 "No":
+
+```xml
+<uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
+```
 
 ### 4.3 内部测试轨
 1. **Testing → Internal testing → Create new release**
 2. **App signing:** 推荐让 Google **Play App Signing** 接管(默认选项)——你只上传 upload keystore 签的 AAB,Google 用自己的 signing key 重签后下发。upload key 丢了可以恢复
 3. 上传 .aab 文件(release build,见第 5 节)
 4. **Testers** 标签 → 用邮箱列表创建 testers list → 把测试人员的 Google 账号邮箱填进去 → 复制 opt-in 链接发给他们
+5. 首次上传后,到 **Settings(原 Setup)→ App integrity → App signing** 复制 app signing key 的 **SHA-1/SHA-256 指纹**,加进 Firebase 项目 `forbox-driver` 的 Android 应用配置(FCM 本身不校验,但依赖签名指纹的 Google API 需要)
+
+### 4.4 后台定位声明(上传含 `ACCESS_BACKGROUND_LOCATION` 的 AAB 后才出现)
+
+**只挡正式发布,不挡内部测试**——可边内测边准备。App content 里会多出 Sensitive app permissions 表,要求:
+
+1. **用途说明**:核心功能——实时追踪配送司机位置,App 在后台时仍需上报;
+2. **演示视频**(YouTube 链接):展示 App 内"显著披露"弹窗 → 用户同意 → 后台定位功能的完整流程;
+3. **App 内必须真的有显著披露(prominent disclosure)**:在系统权限弹窗**之前**,先用自己的 UI 明确告知"本应用会在后台收集位置用于配送追踪",用户同意后再拉系统授权。需检查 `LocationPermission` 屏是否满足此形式,不满足要补。
+
+### 4.5 商品详情(Main store listing,正式发布前必填)
+
+| 素材 | 状态 |
+|---|---|
+| 应用名称 `ForBox`、简短说明(≤80 字符)、完整说明(≤4000 字符) | 待写 |
+| 图标 512×512 | 已有:`assets/play-store-app-icon.png` |
+| 置顶大图 1024×500 | ✅ 已用新品牌重做(深色底字标+标语,`assets/play-store-feature-image.png`);以后想升级成带真机截图的版本可随时替换 |
+| 手机截图 ≥2 张(9:16 或 16:9) | 待截(内测装上后截真实界面) |
+
+默认语言文案写好后,可加中文/蒙古语本地化版本。
 
 ---
 
@@ -151,19 +202,21 @@
 
 > 这一步**不在任何控制台**——是你本地/CI 生成一个 keystore 文件并保管好。
 
-### 生成
-```bash
-keytool -genkey -v -keystore forbox-app-upload.jks \
-  -keyalg RSA -keysize 2048 -validity 10000 \
-  -alias forbox-app-upload
+### 生成(Windows 主构建机约定:keystore 放仓库外 `D:\Forbox\keys\`)
+```powershell
+& "D:\jdk-19.0.1\bin\keytool.exe" -genkeypair -v `
+  -keystore D:\Forbox\keys\forbox-app-upload.jks `
+  -keyalg RSA -keysize 2048 -validity 10000 `
+  -alias forbox-app-upload `
+  -dname "CN=ForBox Express, OU=Mobile, O=ForBox Express, L=Los Angeles, S=California, C=US"
 ```
-填 keystore 密码、key 密码、申请人信息(CN, OU, O, L, S, C)。
+交互输入 keystore 密码(key 密码可直接回车沿用同一个)。**密码立即存入密码管理器。**
 
 ### 配置
-keystore 文件**不进 git**(已有 gitignore 模式覆盖)。把以下值通过环境变量或 `~/.gradle/gradle.properties` 注入:
+keystore 文件**不进 git**(`.gitignore` 已含 `*.keystore` 和 `*.jks`;放 `D:\Forbox\keys\` 双保险)。四个值通过环境变量或 **`~/.gradle/gradle.properties`**(`C:\Users\<user>\.gradle\gradle.properties`,已建好骨架)注入:
 
 ```properties
-ANDROID_NAVIGATOR_APP_UPLOAD_STORE_FILE=/绝对路径/forbox-app-upload.jks
+ANDROID_NAVIGATOR_APP_UPLOAD_STORE_FILE=D:/Forbox/keys/forbox-app-upload.jks
 ANDROID_NAVIGATOR_APP_UPLOAD_STORE_PASSWORD=<keystore密码>
 ANDROID_NAVIGATOR_APP_UPLOAD_KEY_ALIAS=forbox-app-upload
 ANDROID_NAVIGATOR_APP_UPLOAD_KEY_PASSWORD=<key密码>
