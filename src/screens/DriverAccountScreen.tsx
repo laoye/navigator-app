@@ -6,6 +6,7 @@ import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { toast, ToastPosition } from '@backpackapp-io/react-native-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faChevronRight, faWarehouse } from '@fortawesome/free-solid-svg-icons';
+import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../constants/links';
 import { showActionSheet, abbreviateName } from '../utils';
 import { titleize } from '../utils/format';
 import { useAuth } from '../contexts/AuthContext';
@@ -57,7 +58,7 @@ const DriverAccountScreen = () => {
     };
 
     const handleOpenTermsOfService = async () => {
-        const url = 'https://www.fleetbase.io/terms';
+        const url = TERMS_OF_SERVICE_URL;
         const supported = await Linking.canOpenURL(url);
 
         if (supported) {
@@ -68,7 +69,7 @@ const DriverAccountScreen = () => {
     };
 
     const handleOpenPrivacyPolicy = async () => {
-        const url = 'https://www.fleetbase.io/privacy-policy';
+        const url = PRIVACY_POLICY_URL;
         const supported = await Linking.canOpenURL(url);
 
         if (supported) {

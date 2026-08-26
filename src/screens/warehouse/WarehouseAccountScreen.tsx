@@ -1,10 +1,11 @@
 import React from 'react';
-import { Alert, Pressable, ScrollView } from 'react-native';
+import { Alert, Linking, Pressable, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, XStack, YStack, Separator, useTheme } from 'tamagui';
 import { toast, ToastPosition } from '@backpackapp-io/react-native-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faRightFromBracket, faUser, faGlobe, faPalette, faBroom, faChevronRight, faTruck } from '@fortawesome/free-solid-svg-icons';
+import { faRightFromBracket, faUser, faGlobe, faPalette, faBroom, faChevronRight, faTruck, faShieldHalved, faFileContract } from '@fortawesome/free-solid-svg-icons';
+import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../../constants/links';
 import { useWarehouseAuth } from '../../contexts/WarehouseAuthContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import useAppTheme from '../../hooks/use-app-theme';
@@ -122,6 +123,20 @@ const WarehouseAccountScreen = () => {
             label: t('AccountScreen.clearCache'),
             value: null,
             onPress: handleClearCache,
+        },
+        {
+            key: 'termsOfService',
+            icon: faFileContract,
+            label: t('AccountScreen.termsOfService'),
+            value: null,
+            onPress: () => Linking.openURL(TERMS_OF_SERVICE_URL),
+        },
+        {
+            key: 'privacyPolicy',
+            icon: faShieldHalved,
+            label: t('AccountScreen.privacyPolicy'),
+            value: null,
+            onPress: () => Linking.openURL(PRIVACY_POLICY_URL),
         },
     ];
 
