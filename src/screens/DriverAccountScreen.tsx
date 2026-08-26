@@ -80,15 +80,15 @@ const DriverAccountScreen = () => {
     };
 
     const handleChangeProfilePhoto = () => {
+        // "删除头像" 暂不提供:后端 photo:'REMOVE' 无对应处理分支(静默跳过、假成功),
+        // 待后端支持置空 photo_uuid 后再恢复该选项。
         showActionSheet({
             options: [
                 t('AccountScreen.changeProfilePhotoOptions.takePhoto'),
                 t('AccountScreen.changeProfilePhotoOptions.photoLibrary'),
-                t('AccountScreen.changeProfilePhotoOptions.deleteProfilePhoto'),
                 t('common.cancel'),
             ],
-            cancelButtonIndex: 3,
-            destructiveButtonIndex: 2,
+            cancelButtonIndex: 2,
             onSelect: (buttonIndex) => {
                 switch (buttonIndex) {
                     case 0:
@@ -121,11 +121,7 @@ const DriverAccountScreen = () => {
                             }
                         );
                         break;
-                    case 2:
-                        handleRemoveProfilePhoto();
-                        break;
                     default:
-                        console.log('Action canceled');
                         break;
                 }
             },
@@ -133,30 +129,25 @@ const DriverAccountScreen = () => {
     };
 
     const handleUpdateProfilePhoto = async (response) => {
+        // 用户取消选择/拍照时 response 没有 assets
+        if (response?.didCancel || !response?.assets?.length) {
+            return;
+        }
+
         const asset = response.assets[0];
         const { type, base64 } = asset;
+        // 后端 FileResolverService 仅识别以 `data:image` 开头的 data-URI,
+        // 裸 base64 会被静默跳过(返回 200 但头像不变)
         const data = `data:${type};base64,${base64}`;
 
         setIsUploadingPhoto(true);
 
         try {
-            await updateDriver({ photo: base64 });
+            await updateDriver({ photo: data });
             toast.success(t('AccountScreen.photoChanged'));
         } catch (err) {
             console.warn('Error updating driver profile photo', err);
-        } finally {
-            setIsUploadingPhoto(false);
-        }
-    };
-
-    const handleRemoveProfilePhoto = async () => {
-        setIsUploadingPhoto(true);
-
-        try {
-            await updateDriver({ photo: 'REMOVE' });
-            toast.success(t('AccountScreen.photoRemoved'));
-        } catch (err) {
-            console.warn('Error removing driver profile photo', err);
+            toast.error(err instanceof Error ? err.message : t('common.errors.loadFailed'));
         } finally {
             setIsUploadingPhoto(false);
         }
