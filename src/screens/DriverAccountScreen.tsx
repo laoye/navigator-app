@@ -196,12 +196,13 @@ const DriverAccountScreen = () => {
         });
     };
 
-    // Render an item in the menu
+    // Render an item in the menu(无 onPress 的行是只读展示:不可点、不带箭头)
     const renderMenuItem = ({ item }) => (
         <Pressable
             onPress={item.onPress}
+            disabled={!item.onPress}
             style={({ pressed }) => ({
-                backgroundColor: pressed ? theme.secondary.val : theme.background.val,
+                backgroundColor: pressed && item.onPress ? theme.secondary.val : theme.background.val,
                 paddingVertical: 12,
                 paddingHorizontal: 16,
                 flexDirection: 'row',
@@ -217,7 +218,7 @@ const DriverAccountScreen = () => {
             </XStack>
             <XStack alignItems='center' space='$2'>
                 {item.rightComponent}
-                <FontAwesomeIcon icon={faChevronRight} size={16} color={theme.textSecondary.val} />
+                {item.onPress && <FontAwesomeIcon icon={faChevronRight} size={16} color={theme.textSecondary.val} />}
             </XStack>
         </Pressable>
     );
@@ -240,6 +241,8 @@ const DriverAccountScreen = () => {
             ),
             onPress: () => handleChangeProfilePhoto(),
         },
+        // 账号由公司后台开通:邮箱是登录标识,只读展示(改由管理员在 console 操作);
+        // 手机号暂未使用(短信登录停用、开通时也不预填),整行隐藏,待启用短信后恢复。
         {
             title: t('AccountScreen.email'),
             rightComponent: (
@@ -247,16 +250,6 @@ const DriverAccountScreen = () => {
                     {driver.getAttribute('email')}
                 </Text>
             ),
-            onPress: () => navigation.navigate('EditAccountProperty', { property: { name: t('AccountScreen.email'), key: 'email', component: 'input' } }),
-        },
-        {
-            title: t('AccountScreen.phoneNumber'),
-            rightComponent: (
-                <Text color='$textSecondary' opacity={0.5}>
-                    {driver.getAttribute('phone')}
-                </Text>
-            ),
-            onPress: () => navigation.navigate('EditAccountProperty', { property: { name: t('AccountScreen.phoneNumber'), key: 'phone', component: 'phone-input' } }),
         },
         {
             title: t('AccountScreen.name'),
