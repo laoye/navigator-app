@@ -9,7 +9,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>$(APP_NAME)</string>
+	<string>ForBox</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIconName</key>
@@ -26,17 +26,17 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<!-- Info.plist 里的 $(VAR) 是 Xcode 构建设置替换,react-native-config 并不会注入这些变量
+	     (它只生成 JS 侧的 GeneratedDotEnv)。单品牌应用直接写死,避免解析为空。 -->
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>$(APP_IDENTIFIER)</string>
+			<string>com.forboxexpress.app</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>$(APP_LINK_PREFIX)</string>
-				<string>fb$(FACEBOOK_APP_ID)</string>
-				<string>$(APP_IDENTIFIER)</string>
-				<string>com.googleusercontent.apps.$(GOOGLE_IOS_CLIENT_ID)</string>
+				<string>forbox</string>
+				<string>com.forboxexpress.app</string>
 			</array>
 		</dict>
 	</array>
@@ -115,6 +115,10 @@
 	<string>This app allows you to upload photos from your photo library</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
+	<!-- Transistorsoft background-geolocation v5:iOS 也需要 license(v4 的 key 无效)。
+	     到 transistorsoft 客户后台为 com.forboxexpress.app 生成 v5 iOS key(JWT 三段式)后替换下面占位值。 -->
+	<key>TSLocationManagerLicense</key>
+	<string>TODO_PASTE_V5_IOS_LICENSE_KEY</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
