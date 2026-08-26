@@ -53,13 +53,16 @@ const LoginScreen = () => {
                     </Text>
                 </YStack>
             </SafeAreaView>
-            <YStack position='absolute' top={0} right={0} pt={insets.top}>
-                <Button onPress={handleOpenInstanceLink} bg='transparent'>
-                    <Button.Icon>
-                        <FontAwesomeIcon icon={faPlug} color={theme['$textSecondary'].val} />
-                    </Button.Icon>
-                </Button>
-            </YStack>
+            {/* Instance Link 仅开发构建可见,理由同 RoleSelectScreen */}
+            {__DEV__ && (
+                <YStack position='absolute' top={0} right={0} pt={insets.top}>
+                    <Button onPress={handleOpenInstanceLink} bg='transparent'>
+                        <Button.Icon>
+                            <FontAwesomeIcon icon={faPlug} color={theme['$textSecondary'].val} />
+                        </Button.Icon>
+                    </Button>
+                </YStack>
+            )}
             {loading && (
                 <YStack justifyContent='center' alignItems='center' bg='rgba(0, 0, 0, 0.6)' position='absolute' top={0} bottom={0} left={0} right={0}>
                     <Spinner size='large' color='white' />

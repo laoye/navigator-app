@@ -89,13 +89,17 @@ const RoleSelectScreen = () => {
                 </YStack>
             </SafeAreaView>
 
-            <YStack position='absolute' top={0} right={0} pt={insets.top}>
-                <Button onPress={handleOpenInstanceLink} bg='transparent'>
-                    <Button.Icon>
-                        <FontAwesomeIcon icon={faPlug} color='#888' />
-                    </Button.Icon>
-                </Button>
-            </YStack>
+            {/* Instance Link(改服务器地址)仅开发构建可见:生产 host 烤在包里,司机不需要;
+                审核员点进服务器配置页观感也差。 */}
+            {__DEV__ && (
+                <YStack position='absolute' top={0} right={0} pt={insets.top}>
+                    <Button onPress={handleOpenInstanceLink} bg='transparent'>
+                        <Button.Icon>
+                            <FontAwesomeIcon icon={faPlug} color='#888' />
+                        </Button.Icon>
+                    </Button>
+                </YStack>
+            )}
         </YStack>
     );
 };
