@@ -7,6 +7,8 @@ import { formatDuration, formatMeters, titleize, formatWhatsAppTimestamp } from 
 import { getDistance } from '../utils/location';
 import { Place } from '@fleetbase/sdk';
 import { formatLocalized as formatDate } from '../utils/dateFns';
+import { toast } from '../utils/toast';
+import { userFacingError } from '../utils/error';
 import { useLocation } from '../contexts/LocationContext';
 import { useAuth } from '../contexts/AuthContext';
 import useAppTheme from '../hooks/use-app-theme';
@@ -46,7 +48,7 @@ export const AdhocOrderCard = ({ order, onPress, onAccept, onDismiss }) => {
     }, [location, destination]);
 
     const handleAccept = useCallback(async () => {
-        Alert.alert(t('common.cancel'), t('AdhocOrderCard.byAcceptingThisAdHocOrderItWillBecomeAssignedToYouAndTheOrderWillStartImmediatley'), [
+        Alert.alert(t('AdhocOrderCard.acceptOrder'), t('AdhocOrderCard.byAcceptingThisAdHocOrderItWillBecomeAssignedToYouAndTheOrderWillStartImmediatley'), [
             {
                 text: t('common.cancel'),
                 style: 'cancel',
@@ -63,6 +65,7 @@ export const AdhocOrderCard = ({ order, onPress, onAccept, onDismiss }) => {
                         }
                     } catch (err) {
                         console.warn('Error assigning driver to ad-hoc order:', err);
+                        toast.error(userFacingError(err, t));
                     } finally {
                         setIsAccepting(false);
                     }
@@ -72,13 +75,13 @@ export const AdhocOrderCard = ({ order, onPress, onAccept, onDismiss }) => {
     }, [order, setIsAccepting]);
 
     const handleDismiss = useCallback(() => {
-        Alert.alert(t('common.cancel'), t('AdhocOrderCard.byDimissingThisAdHocOrderItWillNoLongerDisplayAsAnAvailableOrder'), [
+        Alert.alert(t('AdhocOrderCard.dismissOrder'), t('AdhocOrderCard.byDimissingThisAdHocOrderItWillNoLongerDisplayAsAnAvailableOrder'), [
             {
                 text: t('common.cancel'),
                 style: 'cancel',
             },
             {
-                text: t('common.close'),
+                text: t('common.ok'),
                 onPress: () => {
                     if (typeof onDismiss === 'function') {
                         onDismiss(order);
@@ -90,7 +93,7 @@ export const AdhocOrderCard = ({ order, onPress, onAccept, onDismiss }) => {
 
     return (
         <Pressable onPress={onPress}>
-            <LoadingOverlay isVisible={isAccepting} text={t('AdhocOrderCard.acceptingAndAssigningOrder')} />
+            <LoadingOverlay visible={isAccepting} text={t('AdhocOrderCard.acceptingAndAssigningOrder')} />
             <YStack bg='$info' borderRadius='$4' borderWidth={1} borderColor='$infoBorder'>
                 <YStack height={150} borderBottomWidth={1} borderColor='$infoBorder'>
                     <LiveOrderRoute

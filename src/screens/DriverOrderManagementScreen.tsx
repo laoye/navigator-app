@@ -64,6 +64,7 @@ const DriverOrderManagementScreen = () => {
         reloadNearbyOrders,
         dismissedOrders,
         setDimissedOrders,
+        ordersLoadError,
     } = useOrderManager();
     const { listen } = useSocketClusterClient();
     const { addNotificationListener, removeNotificationListener } = useNotification();
@@ -74,6 +75,14 @@ const DriverOrderManagementScreen = () => {
     const stops = countStops(activeCurrentOrders);
     const distance = sumDistance(activeCurrentOrders);
     const duration = sumDuration(activeCurrentOrders);
+
+    // 下拉刷新/重试要覆盖列表实际渲染的三份数据（当日单 + 附近单 + 活跃单），
+    // 只刷 currentOrders 会让附近单和空态里的活跃单停留在旧数据。
+    const reloadAllOrders = useCallback(() => {
+        reloadCurrentOrders();
+        reloadNearbyOrders();
+        reloadActiveOrders();
+    }, [reloadCurrentOrders, reloadNearbyOrders, reloadActiveOrders]);
 
     useEffect(() => {
         const handlePushNotification = async (notification, action) => {
@@ -359,11 +368,24 @@ const DriverOrderManagementScreen = () => {
                     </Text>
                 </XStack>
             </YStack>
+            {ordersLoadError && (
+                <Pressable onPress={reloadAllOrders}>
+                    <XStack bg='$warning' borderBottomWidth={1} borderColor='$warningBorder' alignItems='center' px='$3' py='$2' space='$2'>
+                        <FontAwesomeIcon icon={faInfoCircle} color={theme['$warningText']?.val} size={14} />
+                        <Text color='$warningText' fontSize={13} flex={1}>
+                            {t('DriverOrderManagementScreen.loadFailedStale')}
+                        </Text>
+                        <Text color='$warningText' fontSize={13} fontWeight='700'>
+                            {t('common.retry')}
+                        </Text>
+                    </XStack>
+                </Pressable>
+            )}
             <FlatList
                 data={[...nearbyOrders, ...currentOrders]}
                 keyExtractor={(order, index) => order.id.toString() + '_' + index}
                 renderItem={renderOrder}
-                refreshControl={<RefreshControl refreshing={isFetchingCurrentOrders} onRefresh={reloadCurrentOrders} tintColor={theme['$blue-500'].val} />}
+                refreshControl={<RefreshControl refreshing={isFetchingCurrentOrders} onRefresh={reloadAllOrders} tintColor={theme['$blue-500'].val} />}
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
                 ItemSeparatorComponent={() => <Separator borderBottomWidth={1} borderColor='$borderColorWithShadow' />}

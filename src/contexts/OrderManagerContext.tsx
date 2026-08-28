@@ -15,7 +15,7 @@ function restoreCollection(collection, adapter) {
     return collection.map((json) => new Order(json, adapter));
 }
 
-const OrderManagerContext = createContext(null);
+const OrderManagerContext = createContext<any>(null);
 
 export const OrderManagerProvider: React.FC = ({ children }) => {
     const theme = useTheme();
@@ -41,6 +41,10 @@ export const OrderManagerProvider: React.FC = ({ children }) => {
     const [isFetchingRecentOrders, setIsFetchingRecentOrders] = useState(false);
     const [isFetchingNearbyOrders, setIsFetchingNearbyOrders] = useState(false);
     const [isFetchingCurrentOrders, setIsFetchingCurrentOrders] = useState(false);
+
+    // 最近一次拉取失败的记录。失败时保留 MMKV 里上次成功的数据（服务端真实
+    // 返回空列表才会清空），由屏幕据此展示"数据可能已过期"并提供重试。
+    const [ordersLoadError, setOrdersLoadError] = useState<{ source: string; at: number } | null>(null);
 
     // Define statuses to exclude from active orders
     const nonActiveOrderStatuses = useMemo(() => new Set(['completed', 'created', 'canceled', 'order_canceled']), []);
@@ -114,9 +118,10 @@ export const OrderManagerProvider: React.FC = ({ children }) => {
                 const fetchedOrders = await activeOrdersPromiseRef.current;
                 setAllActiveOrders(serializeCollection(fetchedOrders));
                 hasLoadedActiveRef.current = true;
+                setOrdersLoadError(null);
             } catch (error) {
                 console.warn('Unable to load active orders for driver:', error);
-                setAllActiveOrders([]);
+                setOrdersLoadError({ source: 'active', at: Date.now() });
             } finally {
                 activeOrdersPromiseRef.current = null;
             }
@@ -134,9 +139,10 @@ export const OrderManagerProvider: React.FC = ({ children }) => {
                 const fetchedOrders = await recentOrdersPromiseRef.current;
                 setAllRecentOrders(serializeCollection(fetchedOrders));
                 hasLoadedRecentRef.current = true;
+                setOrdersLoadError(null);
             } catch (error) {
                 console.warn('Unable to load recent orders for driver:', error);
-                setAllRecentOrders([]);
+                setOrdersLoadError({ source: 'recent', at: Date.now() });
             } finally {
                 recentOrdersPromiseRef.current = null;
             }
@@ -157,9 +163,10 @@ export const OrderManagerProvider: React.FC = ({ children }) => {
                 const fetchedOrders = await nearbyOrdersPromiseRef.current;
                 setNearbyOrders(serializeCollection(fetchedOrders));
                 hasLoadedNearbyRef.current = true;
+                setOrdersLoadError(null);
             } catch (error) {
                 console.warn('Unable to load nearby orders for driver:', error);
-                setNearbyOrders([]);
+                setOrdersLoadError({ source: 'nearby', at: Date.now() });
             } finally {
                 nearbyOrdersPromiseRef.current = null;
             }
@@ -178,9 +185,10 @@ export const OrderManagerProvider: React.FC = ({ children }) => {
                 const fetchedOrders = await currentOrdersPromiseRef.current;
                 setCurrentOrders(serializeCollection(fetchedOrders));
                 hasLoadedCurrentRef.current = true;
+                setOrdersLoadError(null);
             } catch (error) {
                 console.warn('Unable to load current orders for driver:', error);
-                setCurrentOrders([]);
+                setOrdersLoadError({ source: 'current', at: Date.now() });
             } finally {
                 currentOrdersPromiseRef.current = null;
             }
@@ -304,6 +312,7 @@ export const OrderManagerProvider: React.FC = ({ children }) => {
             reloadNearbyOrders,
             dismissedOrders,
             setDimissedOrders,
+            ordersLoadError,
         }),
         [
             queryOrders,
@@ -324,6 +333,7 @@ export const OrderManagerProvider: React.FC = ({ children }) => {
             reloadNearbyOrders,
             dismissedOrders,
             setDimissedOrders,
+            ordersLoadError,
         ]
     );
 

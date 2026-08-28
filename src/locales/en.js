@@ -27,6 +27,10 @@ export default {
     errors: {
       fleetbaseHostNotConfigured: 'Server connection is not configured',
       loadFailed: 'Failed to load. Please try again.',
+      networkUnavailable: 'Network unavailable. Please check your connection.',
+      requestFailed: 'Action failed. Please try again.',
+      serviceUnavailable: 'Service temporarily unavailable. Please try again later.',
+      sessionExpired: 'Your session has expired. Please log in again.',
     },
   },
   AccountScreen: {
@@ -153,6 +157,7 @@ export default {
     activeOrdersCount: 'Active Orders: %{count}',
     ordersCount: '%{count} orders',
     stopsLeft: '%{count} stops left',
+    loadFailedStale: 'Refresh failed — orders shown may be out of date',
     noCurrentOrders: 'No current orders for %{date}',
   },
   OrderWaypointList: {

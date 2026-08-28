@@ -1,7 +1,8 @@
-import React, { createContext, useCallback, useContext, useMemo, ReactNode } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, ReactNode } from 'react';
 import I18n from 'react-native-i18n';
 import useStorage from '../hooks/use-storage';
 import { useConfig } from './ConfigContext';
+import { registerWarehouseUnauthorizedHandler } from '../warehouse/warehouseApi';
 
 /**
  * 仓库员工角色登录态。
@@ -101,6 +102,12 @@ export const WarehouseAuthProvider = ({ children }: { children: ReactNode }) => 
         setStaff(null);
         setActiveRole(null);
     }, [resolveConnectionConfig, token, setToken, setStaff, setActiveRole]);
+
+    // token 过期(接口 401)时清理登录态,守卫会自动弹回登录页
+    useEffect(() => {
+        registerWarehouseUnauthorizedHandler(() => logoutWarehouse(), I18n.t('common.errors.sessionExpired'));
+        return () => registerWarehouseUnauthorizedHandler(null);
+    }, [logoutWarehouse]);
 
     const value = useMemo<WarehouseAuthContextValue>(
         () => ({

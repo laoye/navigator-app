@@ -15,6 +15,7 @@ import { titleize } from 'inflected';
 import { formatCurrency, formatMeters, formatDuration, smartHumanize } from '../utils/format';
 import { restoreFleetbasePlace, getCoordinates } from '../utils/location';
 import { toast } from '../utils/toast';
+import { userFacingError } from '../utils/error';
 import { config, showActionSheet } from '../utils';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocation } from '../contexts/LocationContext';
@@ -90,7 +91,7 @@ const OrderScreen = ({ route }) => {
     const distanceLoadedRef = useRef(false);
     const isUpdatingActivity = useRef(false);
     const listenerRef = useRef(null);
-    const activitySheetRef = useRef(null);
+    const activitySheetRef = useRef<any>(null);
     const isAdhoc = order.getAttribute('adhoc') === true;
     const isIncomingAdhoc = isAdhoc && order.getAttribute('driver_assigned') === null;
     const isDriverAssigned = order.getAttribute('driver_assigned') !== null;
@@ -250,6 +251,7 @@ const OrderScreen = ({ route }) => {
                 updateOrder(updatedOrder);
             } catch (err) {
                 console.warn('Error changing order destination:', err);
+                toast.error(userFacingError(err, t));
             }
         },
         [order]
@@ -281,6 +283,7 @@ const OrderScreen = ({ route }) => {
                         },
                     ]);
                 }
+                toast.error(userFacingError(err, t));
             } finally {
                 isUpdatingActivity.current = false;
             }
@@ -303,6 +306,7 @@ const OrderScreen = ({ route }) => {
                                 updateOrder(updatedOrder);
                             } catch (err) {
                                 console.warn('Error updating order activity:', err);
+                                toast.error(userFacingError(err, t));
                             }
                         },
                     },
@@ -318,6 +322,8 @@ const OrderScreen = ({ route }) => {
             setNextActivity(activity);
         } catch (err) {
             console.warn('Error fetching next activity for order:', err);
+            activitySheetRef.current?.closeBottomSheet();
+            toast.error(userFacingError(err, t));
         }
     }, [order]);
 
@@ -372,6 +378,7 @@ const OrderScreen = ({ route }) => {
                 }
             } catch (err) {
                 console.warn('Error updating order activity:', err);
+                toast.error(userFacingError(err, t));
             } finally {
                 isUpdatingActivity.current = false;
                 setActivityLoading(null);
@@ -392,7 +399,8 @@ const OrderScreen = ({ route }) => {
                 updateOrder(updatedOrder);
                 setNextActivity([]);
             } catch (err) {
-                console.warn('Error updating order activity:', err);
+                console.warn('Error completing order:', err);
+                toast.error(userFacingError(err, t));
             } finally {
                 isUpdatingActivity.current = false;
                 setActivityLoading(null);
@@ -417,6 +425,7 @@ const OrderScreen = ({ route }) => {
                         setOrder(startedOrder);
                     } catch (err) {
                         console.warn('Error assigning driver to ad-hoc order:', err);
+                        toast.error(userFacingError(err, t));
                     } finally {
                         setIsAccepting(false);
                     }

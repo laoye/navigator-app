@@ -29,6 +29,10 @@ export default {
         errors: {
             fleetbaseHostNotConfigured: '服务器连接未配置',
             loadFailed: '加载失败，请重试。',
+            networkUnavailable: '网络不可用，请检查网络连接。',
+            requestFailed: '操作失败，请重试。',
+            serviceUnavailable: '服务暂时不可用，请稍后重试。',
+            sessionExpired: '登录已过期，请重新登录。',
         },
     },
     BootScreen: {
@@ -205,6 +209,7 @@ export default {
         activeOrdersCount: '进行中订单：%{count}',
         ordersCount: '%{count} 单',
         stopsLeft: '剩余 %{count} 站',
+        loadFailedStale: '刷新失败，当前显示的可能不是最新数据',
         noCurrentOrders: '%{date} 暂无订单',
     },
     OrderWaypointList: {

@@ -114,6 +114,18 @@ function joinUrl(host: string, path: string): string {
     return `${host.replace(/\/$/, '')}${path}`;
 }
 
+// 401 统一处理：token 过期时由 WarehouseAuthProvider 注册的回调清理登录态并
+// 弹回登录页，否则每个屏幕都会卡在 "Unauthenticated." 错误条上无路可走。
+let unauthorizedHandler: (() => void) | null = null;
+let sessionExpiredMessage = 'Session expired. Please log in again.';
+
+export function registerWarehouseUnauthorizedHandler(handler: (() => void) | null, message?: string): void {
+    unauthorizedHandler = handler;
+    if (message) {
+        sessionExpiredMessage = message;
+    }
+}
+
 async function authedFetch<T>(host: string, path: string, init: RequestInit = {}): Promise<T> {
     const token = storage.getString('_warehouse_token');
     const cleanToken = token ? JSON.parse(token) : null;
@@ -129,6 +141,11 @@ async function authedFetch<T>(host: string, path: string, init: RequestInit = {}
     });
 
     const body = (await res.json().catch(() => ({}))) as { message?: string } & Record<string, unknown>;
+
+    if (res.status === 401) {
+        unauthorizedHandler?.();
+        throw new Error(sessionExpiredMessage);
+    }
 
     if (!res.ok) {
         const msg = body?.message ?? `HTTP ${res.status}`;

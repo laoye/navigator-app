@@ -265,7 +265,16 @@ export const AuthProvider = ({ children }) => {
                 });
                 const body = await res.json().catch(() => ({}));
                 if (!res.ok || body.status !== 'ok') {
-                    throw new Error(body?.message ?? `HTTP ${res.status}`);
+                    // 401/422 是凭据问题；5xx 是服务问题；其余只透传可读的业务 message，
+                    // 避免把 "Unauthenticated." / Laravel 英文校验句直接怼给司机
+                    if (res.status === 401 || res.status === 422) {
+                        throw new Error(t('EmailLoginScreen.invalidEmailOrPassword'));
+                    }
+                    if (res.status >= 500) {
+                        throw new Error(t('common.errors.serviceUnavailable'));
+                    }
+                    const message = typeof body?.message === 'string' && body.message.trim() !== '' ? body.message : null;
+                    throw new Error(message ?? t('common.errors.requestFailed'));
                 }
                 const driverData = { ...body.data.driver, token: body.data.token };
                 // 简单写 storage —— 顶层 useEffect 监听 storedDriver 变化会触发 RESTORE_SESSION，
@@ -278,6 +287,10 @@ export const AuthProvider = ({ children }) => {
             } catch (error) {
                 dispatch({ type: 'VERIFY', isVerifyingCode: false });
                 console.warn('[AuthContext] Email login failed:', error);
+                // fetch 网络层失败抛 TypeError('Network request failed')
+                if (error instanceof TypeError) {
+                    throw new Error(t('common.errors.networkUnavailable'));
+                }
                 throw error;
             }
         },
