@@ -14,10 +14,11 @@ platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
 # Permissions handlers
+# 只保留实际使用的权限：编译进未使用的 protected API handler（此前有
+# Contacts/FaceID）即使代码不调用，也会触发审核的静态检查风险，
+# 且 Info.plist 并无对应 usage description。改动后需在 Mac 上重新 pod install。
 setup_permissions([
   'Camera',
-  'Contacts',
-  'FaceID',
   'LocationAccuracy',
   'LocationAlways',
   'LocationWhenInUse',

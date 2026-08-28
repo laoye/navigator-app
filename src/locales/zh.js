@@ -467,6 +467,7 @@ export default {
         submitting: '登录中…',
         switchRole: '切换身份',
         invalidEmailOrPassword: '请输入邮箱与密码',
+        invalidCredentials: '邮箱或密码错误',
         roleNotAllowed: '该账号无仓库 App 权限',
     },
     WarehouseDashboardScreen: {

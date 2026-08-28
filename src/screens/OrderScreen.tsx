@@ -329,44 +329,43 @@ const OrderScreen = ({ route }) => {
 
     const sendOrderActivityUpdate = useCallback(
         async (activity, proof) => {
+            // 全流程统一 try/catch/finally：此前"跳 POD 采集"与"POD 计数校验"两条
+            // 路径在 try 之外，前者返回后 loading 不清除，后者弱网 reject 时既无
+            // 提示也不清 loading，都会让界面看起来卡住
             setActivityLoading(activity.code);
 
-            if (activity.require_pod && !proof) {
-                activitySheetRef.current?.closeBottomSheet();
-                return navigation.navigate('ProofOfDelivery', { activity, order: order.serialize(), waypoint: destination.serialize() });
-            }
-
-            // ForBox 大件订单强制 POD 客户端拦截：picked_up / delivered 推进时
-            // 必须 >= 2 张照片 + >= 1 签字（方式 B 送仓单豁免 picked_up）。
-            // 服务端 FBOrderObserver 会再做一次 422 兜底。
-            const targetCode = activity?.code;
-            const orderType = order.getAttribute('type');
-            const inboundMethod = order.getAttribute('meta')?.inbound_method;
-            if (shouldEnforceForboxPod(orderType, targetCode, inboundMethod)) {
-                const podCount = await fetchOrderPodCount(adapter, order.id);
-                if (!isPodSufficient(podCount)) {
-                    setActivityLoading(null);
-                    activitySheetRef.current?.closeBottomSheet();
-                    toast.error(`大件 POD 不足：${describeShortage(podCount)}`);
-                    return navigation.navigate('ProofOfDelivery', {
-                        activity,
-                        order: order.serialize(),
-                        waypoint: destination?.serialize(),
-                    });
-                }
-            }
-
-            // Track current destination
-            const previousDestination = getOrderDestination(order, adapter);
-
-            isUpdatingActivity.current = true;
-            setLoadingOverlayMessage(`Updating Activity: ${activity._resolved_status ?? activity.status}`);
-
             try {
+                if (activity.require_pod && !proof) {
+                    return navigation.navigate('ProofOfDelivery', { activity, order: order.serialize(), waypoint: destination.serialize() });
+                }
+
+                // ForBox 大件订单强制 POD 客户端拦截：picked_up / delivered 推进时
+                // 必须 >= 2 张照片 + >= 1 签字（方式 B 送仓单豁免 picked_up）。
+                // 服务端 FBOrderObserver 会再做一次 422 兜底。
+                const targetCode = activity?.code;
+                const orderType = order.getAttribute('type');
+                const inboundMethod = order.getAttribute('meta')?.inbound_method;
+                if (shouldEnforceForboxPod(orderType, targetCode, inboundMethod)) {
+                    const podCount = await fetchOrderPodCount(adapter, order.id);
+                    if (!isPodSufficient(podCount)) {
+                        toast.error(`大件 POD 不足：${describeShortage(podCount)}`);
+                        return navigation.navigate('ProofOfDelivery', {
+                            activity,
+                            order: order.serialize(),
+                            waypoint: destination?.serialize(),
+                        });
+                    }
+                }
+
+                // Track current destination
+                const previousDestination = getOrderDestination(order, adapter);
+
+                isUpdatingActivity.current = true;
+                setLoadingOverlayMessage(`Updating Activity: ${activity._resolved_status ?? activity.status}`);
+
                 const updatedOrder = await runWithLoading(order.updateActivity({ activity, proof: proof?.id }), 'activityUpdate');
                 updateOrder(updatedOrder);
                 setNextActivity([]);
-                setLoadingOverlayMessage(null);
                 toast.success(`Order status updated to: ${activity._resolved_status ?? activity.status}`);
 
                 const currentDestination = getOrderDestination(updatedOrder, adapter);

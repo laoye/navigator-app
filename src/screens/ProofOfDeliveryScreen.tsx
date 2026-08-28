@@ -37,7 +37,11 @@ const ProofOfDeliveryScreen = ({ route }) => {
     const order = new Order(params.order, adapter);
     const waypoint = new Place(params.waypoint, adapter);
     const entity = params.entity;
-    const method = activity.pod_method ?? fallbackMethod;
+    // 配置值必须是已知类型才采用——服务端可能给空串或未知值（?? 只挡 null/undefined），
+    // 那种情况下选择页的按钮会点了不生效
+    const VALID_POD_METHODS = ['scan', 'photo', 'signature'];
+    const configuredMethod = activity?.pod_method;
+    const method = VALID_POD_METHODS.includes(configuredMethod) ? configuredMethod : fallbackMethod;
     const isWaypointActivity = waypoint && typeof waypoint.getAttribute('tracking') === 'string' && waypoint.getAttribute('tracking').length;
     const subject = entity ?? (isWaypointActivity ? waypoint : order);
 

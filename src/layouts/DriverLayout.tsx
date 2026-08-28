@@ -27,7 +27,7 @@ const DriverLayout = ({ children, state, descriptors, navigation: tabNavigation 
     const navigation = useNavigation();
     const { fleetbase } = useFleetbase();
     const { getChannel } = useChat();
-    const { addNotificationListener, removeNotificationListener } = useNotification();
+    const { addNotificationListener, removeNotificationListener, consumePendingOpened } = useNotification();
     const { reloadActiveOrders } = useOrderManager();
     const { t } = useLanguage();
 
@@ -112,10 +112,13 @@ const DriverLayout = ({ children, state, descriptors, navigation: tabNavigation 
 
         addNotificationListener(handlePushNotification);
 
+        // 冷启动点通知：监听注册前暂存的 opened 事件由本导航层统一领取补跳
+        consumePendingOpened().forEach((notification: any) => handlePushNotification(notification, 'opened'));
+
         return () => {
             removeNotificationListener(handlePushNotification);
         };
-    }, [addNotificationListener, removeNotificationListener, fleetbase, tabNavigation, navigation]);
+    }, [addNotificationListener, removeNotificationListener, consumePendingOpened, fleetbase, tabNavigation, navigation]);
 
     return <View style={{ width: '100%', height: '100%', flex: 1 }}>{children}</View>;
 };

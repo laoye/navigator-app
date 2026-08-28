@@ -499,6 +499,7 @@ export default {
     submitting: 'Logging in…',
     switchRole: 'Switch role',
     invalidEmailOrPassword: 'Email and password are required',
+    invalidCredentials: 'Incorrect email or password',
     roleNotAllowed: 'This account does not have warehouse app access',
   },
   WarehouseDashboardScreen: {

@@ -42,9 +42,27 @@ export const OrderManagerProvider: React.FC = ({ children }) => {
     const [isFetchingNearbyOrders, setIsFetchingNearbyOrders] = useState(false);
     const [isFetchingCurrentOrders, setIsFetchingCurrentOrders] = useState(false);
 
-    // 最近一次拉取失败的记录。失败时保留 MMKV 里上次成功的数据（服务端真实
-    // 返回空列表才会清空），由屏幕据此展示"数据可能已过期"并提供重试。
-    const [ordersLoadError, setOrdersLoadError] = useState<{ source: string; at: number } | null>(null);
+    // 各数据源最近一次拉取失败的记录（key=source, value=时间戳）。失败时保留
+    // MMKV 里上次成功的数据（服务端真实返回空列表才会清空），由屏幕据此展示
+    // "数据可能已过期"并提供重试。按 source 分开记，某一源成功只清自己的错——
+    // 否则 current 拉取失败后 nearby 定时刷新成功会把过期提示顶掉。
+    const [ordersLoadErrors, setOrdersLoadErrors] = useState<Record<string, number>>({});
+
+    const markLoadError = useCallback((source: string) => {
+        setOrdersLoadErrors((prev) => ({ ...prev, [source]: Date.now() }));
+    }, []);
+
+    const clearLoadError = useCallback((source: string) => {
+        setOrdersLoadErrors((prev) => {
+            if (!(source in prev)) return prev;
+            const next = { ...prev };
+            delete next[source];
+            return next;
+        });
+    }, []);
+
+    // 对外保持"truthy 即有错"的契约
+    const ordersLoadError = useMemo(() => (Object.keys(ordersLoadErrors).length > 0 ? ordersLoadErrors : null), [ordersLoadErrors]);
 
     // Define statuses to exclude from active orders
     const nonActiveOrderStatuses = useMemo(() => new Set(['completed', 'created', 'canceled', 'order_canceled']), []);
@@ -118,15 +136,15 @@ export const OrderManagerProvider: React.FC = ({ children }) => {
                 const fetchedOrders = await activeOrdersPromiseRef.current;
                 setAllActiveOrders(serializeCollection(fetchedOrders));
                 hasLoadedActiveRef.current = true;
-                setOrdersLoadError(null);
+                clearLoadError('active');
             } catch (error) {
                 console.warn('Unable to load active orders for driver:', error);
-                setOrdersLoadError({ source: 'active', at: Date.now() });
+                markLoadError('active');
             } finally {
                 activeOrdersPromiseRef.current = null;
             }
         },
-        [fleetbase, driver, queryOrders, setAllActiveOrders]
+        [fleetbase, driver, queryOrders, setAllActiveOrders, markLoadError, clearLoadError]
     );
 
     // Fetch recent orders
@@ -139,15 +157,15 @@ export const OrderManagerProvider: React.FC = ({ children }) => {
                 const fetchedOrders = await recentOrdersPromiseRef.current;
                 setAllRecentOrders(serializeCollection(fetchedOrders));
                 hasLoadedRecentRef.current = true;
-                setOrdersLoadError(null);
+                clearLoadError('recent');
             } catch (error) {
                 console.warn('Unable to load recent orders for driver:', error);
-                setOrdersLoadError({ source: 'recent', at: Date.now() });
+                markLoadError('recent');
             } finally {
                 recentOrdersPromiseRef.current = null;
             }
         },
-        [fleetbase, driver, queryOrders, setAllRecentOrders]
+        [fleetbase, driver, queryOrders, setAllRecentOrders, markLoadError, clearLoadError]
     );
 
     // Fetch recent orders
@@ -163,15 +181,15 @@ export const OrderManagerProvider: React.FC = ({ children }) => {
                 const fetchedOrders = await nearbyOrdersPromiseRef.current;
                 setNearbyOrders(serializeCollection(fetchedOrders));
                 hasLoadedNearbyRef.current = true;
-                setOrdersLoadError(null);
+                clearLoadError('nearby');
             } catch (error) {
                 console.warn('Unable to load nearby orders for driver:', error);
-                setOrdersLoadError({ source: 'nearby', at: Date.now() });
+                markLoadError('nearby');
             } finally {
                 nearbyOrdersPromiseRef.current = null;
             }
         },
-        [fleetbase, driver, queryOrders, setNearbyOrders]
+        [fleetbase, driver, queryOrders, setNearbyOrders, markLoadError, clearLoadError]
     );
 
     // Fetch current orders for the currentDate.
@@ -185,15 +203,15 @@ export const OrderManagerProvider: React.FC = ({ children }) => {
                 const fetchedOrders = await currentOrdersPromiseRef.current;
                 setCurrentOrders(serializeCollection(fetchedOrders));
                 hasLoadedCurrentRef.current = true;
-                setOrdersLoadError(null);
+                clearLoadError('current');
             } catch (error) {
                 console.warn('Unable to load current orders for driver:', error);
-                setOrdersLoadError({ source: 'current', at: Date.now() });
+                markLoadError('current');
             } finally {
                 currentOrdersPromiseRef.current = null;
             }
         },
-        [fleetbase, driver, currentDate, queryOrders, setCurrentOrders]
+        [fleetbase, driver, currentDate, queryOrders, setCurrentOrders, markLoadError, clearLoadError]
     );
 
     // Allows an update of a sigle order in the storage

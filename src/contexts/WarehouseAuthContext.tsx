@@ -51,17 +51,32 @@ export const WarehouseAuthProvider = ({ children }: { children: ReactNode }) => 
             }
 
             const url = `${String(host).replace(/\/$/, '')}/forbox/int/v1/forbox/ops/auth/login`;
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
+
+            let res: Response;
+            try {
+                res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                    body: JSON.stringify({ email, password }),
+                });
+            } catch {
+                // fetch 网络层失败抛 TypeError('Network request failed')
+                throw new Error(I18n.t('common.errors.networkUnavailable'));
+            }
 
             const body = await res.json().catch(() => ({} as Record<string, unknown>));
 
             if (!res.ok) {
-                const msg = (body as { message?: string }).message ?? `HTTP ${res.status}`;
-                throw new Error(msg);
+                // 与司机邮箱登录同一套映射：凭据错/服务错/可读业务 message 才透传，
+                // 不把 "Unauthenticated." / Laravel 英文校验句直接展示给员工
+                if (res.status === 401 || res.status === 422) {
+                    throw new Error(I18n.t('WarehouseLoginScreen.invalidCredentials'));
+                }
+                if (res.status >= 500) {
+                    throw new Error(I18n.t('common.errors.serviceUnavailable'));
+                }
+                const message = (body as { message?: string }).message;
+                throw new Error(typeof message === 'string' && message.trim() !== '' ? message : I18n.t('common.errors.requestFailed'));
             }
 
             const data = (body as { data?: { token?: string; staff?: WarehouseStaff } }).data ?? {};
@@ -69,12 +84,12 @@ export const WarehouseAuthProvider = ({ children }: { children: ReactNode }) => 
             const issuedStaff = data.staff;
 
             if (!issuedToken || !issuedStaff) {
-                throw new Error('Invalid login response');
+                throw new Error(I18n.t('common.errors.serviceUnavailable'));
             }
 
             // 仅放行 warehouse / admin 角色（operations 不在 App 端使用）
             if (issuedStaff.role !== 'warehouse' && issuedStaff.role !== 'admin') {
-                throw new Error('该账号无仓库 App 权限');
+                throw new Error(I18n.t('WarehouseLoginScreen.roleNotAllowed'));
             }
 
             setToken(issuedToken);

@@ -13,7 +13,7 @@ const requestAndroidNotificationPermission = async () => {
     return true;
 };
 
-export const NotificationContext = createContext();
+export const NotificationContext = createContext<any>(undefined);
 
 export const NotificationProvider = ({ children }) => {
     const [notifications, setNotifications] = useStorage('_push_notifications', []);
@@ -35,12 +35,14 @@ export const NotificationProvider = ({ children }) => {
     // Function to add a listener
     const addNotificationListener = (callback) => {
         notificationListeners.current.push(callback);
+    };
 
-        if (pendingOpenedRef.current.length > 0) {
-            const pending = pendingOpenedRef.current;
-            pendingOpenedRef.current = [];
-            pending.forEach((notification) => callback(notification, 'opened'));
-        }
+    // 暂存的 opened 通知只应由负责跳转的导航层（DriverLayout）显式领取——
+    // 交给"第一个注册的监听者"会被只刷数据不导航的订单列表页抢走，跳转丢失
+    const consumePendingOpened = () => {
+        const pending = pendingOpenedRef.current;
+        pendingOpenedRef.current = [];
+        return pending;
     };
 
     // Function to remove a listener
@@ -125,7 +127,9 @@ export const NotificationProvider = ({ children }) => {
     }, []);
 
     return (
-        <NotificationContext.Provider value={{ notifications, lastNotification, deviceToken, addNotificationListener, removeNotificationListener }}>{children}</NotificationContext.Provider>
+        <NotificationContext.Provider value={{ notifications, lastNotification, deviceToken, addNotificationListener, removeNotificationListener, consumePendingOpened }}>
+            {children}
+        </NotificationContext.Provider>
     );
 };
 
