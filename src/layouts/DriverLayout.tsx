@@ -2,9 +2,12 @@ import { useEffect } from 'react';
 import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { later } from '../utils';
+import { toast } from '../utils/toast';
+import { userFacingError } from '../utils/error';
 import { useNotification } from '../contexts/NotificationContext';
 import { useChat } from '../contexts/ChatContext';
 import { useOrderManager } from '../contexts/OrderManagerContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import useFleetbase from '../hooks/use-fleetbase';
 
 const getCurrentScreen = (tabNavigation) => {
@@ -26,6 +29,7 @@ const DriverLayout = ({ children, state, descriptors, navigation: tabNavigation 
     const { getChannel } = useChat();
     const { addNotificationListener, removeNotificationListener } = useNotification();
     const { reloadActiveOrders } = useOrderManager();
+    const { t } = useLanguage();
 
     useEffect(() => {
         if (!fleetbase) {
@@ -64,12 +68,18 @@ const DriverLayout = ({ children, state, descriptors, navigation: tabNavigation 
                     }
                 } catch (err) {
                     console.warn('Error trying to open chat channel:', err);
+                    toast.error(userFacingError(err, t));
                 }
             }
 
             if (typeof id === 'string' && id.startsWith('order_')) {
-                // Reload active orders
+                // 前台收到(received)只静默刷新数据；仅司机点击了通知(opened)才允许
+                // 跳转，否则会在司机操作中途强行切到 OrderModal 打断当前工作
                 reloadActiveOrders();
+
+                if (action !== 'opened') {
+                    return;
+                }
 
                 try {
                     const order = await fleetbase.orders.findRecord(id);
@@ -95,6 +105,7 @@ const DriverLayout = ({ children, state, descriptors, navigation: tabNavigation 
                     }
                 } catch (err) {
                     console.warn('Error navigating to order:', err);
+                    toast.error(userFacingError(err, t));
                 }
             }
         };
