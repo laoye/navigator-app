@@ -96,11 +96,7 @@
 		</dict>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>This app may need to use your camera for your profile picture</string>
-	<key>NSContactsUsageDescription</key>
-	<string>This app may need to access your contacts for sharing</string>
-	<key>NSLocalUsageDescription</key>
-	<string>This app requires access to send you notifications about order status updates and other important information.</string>
+	<string>ForBox uses the camera to capture proof-of-delivery photos, scan package barcodes and QR codes, and take your profile picture.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>ForBox uses your location even when the app is in the background so dispatch can track delivery progress in real time.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
@@ -110,13 +106,14 @@
 	<key>NSMotionUsageDescription</key>
 	<string>ForBox uses motion data to make background location tracking battery-efficient.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>This app allows you to download photos to your photo library</string>
+	<string>ForBox saves photos you capture, such as proof-of-delivery photos, to your photo library when you choose to keep a copy.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app allows you to upload photos from your photo library</string>
+	<string>ForBox accesses your photo library so you can attach existing photos as proof of delivery, chat attachments, or your profile picture.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
-	<!-- Transistorsoft background-geolocation v5:iOS 也需要 license(v4 的 key 无效)。
-	     到 transistorsoft 客户后台为 com.forboxexpress.app 生成 v5 iOS key(JWT 三段式)后替换下面占位值。 -->
+	<!-- Transistorsoft background-geolocation v5 iOS license(有效 key,勿替换)。
+	     绑定 com.forboxexpress.app,max_build_stamp=20270703:2027-07-03 之后打的包
+	     会 license 失效(grace_builds=0 无宽限),届时需到 transistorsoft 客户后台续期换 key。 -->
 	<key>TSLocationManagerLicense</key>
 	<string>eyJhbGciOiJFZERTQSIsImtpZCI6ImVkMjU1MTktbWFpbi12MSJ9.eyJvcyI6ImlvcyIsImFwcF9pZCI6ImNvbS5mb3Jib3hleHByZXNzLmFwcCIsIm9yZGVyX251bWJlciI6MTY0MzEsInJlbmV3YWxfdXJsIjoiaHR0cHM6Ly9zaG9wLnRyYW5zaXN0b3Jzb2Z0LmNvbS9jYXJ0LzE2NTA3ODYxNTA1OjE_bm90ZT0xMDg4OSIsImN1c3RvbWVyX2lkIjo5ODk0LCJwcm9kdWN0IjoicmVhY3QtbmF0aXZlLWJhY2tncm91bmQtZ2VvbG9jYXRpb24iLCJrZXlfdmVyc2lvbiI6MSwiYWxsb3dlZF9zdWZmaXhlcyI6WyIuZGV2IiwiLmRldmVsb3BtZW50IiwiLnN0YWdpbmciLCIuc3RhZ2UiLCIucWEiLCIudWF0IiwiLnRlc3QiLCIuZGVidWciXSwibWF4X2J1aWxkX3N0YW1wIjoyMDI3MDcwMywiZ3JhY2VfYnVpbGRzIjowLCJlbnRpdGxlbWVudHMiOlsiY29yZSJdLCJpYXQiOjE3ODc1NTc2ODB9.p_bHtRmjIXgTQ0yRUvCbxKncszcW6nZ-5znqWYod1NF47UPzfKGvephKRcNLhaSkAPDYBjeoydv0--ZfY5YiCw</string>
 	<key>UIBackgroundModes</key>
