@@ -426,13 +426,29 @@ export const AuthProvider = ({ children }) => {
         });
     }, [setDriver]);
 
-    // // Sync device token if it changes
-    // // Test on IOS before adding
-    // useEffect(() => {
-    //     if (deviceToken && state.driver) {
-    //         syncDevice(state.driver, deviceToken);
-    //     }
-    // }, [deviceToken, state.driver]);
+    // Sync device token whenever it becomes available or changes.
+    // APNs/FCM token often arrives after login already completed (permission prompt +
+    // registration round-trip), so syncing only inside login misses the first session
+    // entirely — the driver would never receive pushes until re-login.
+    // Dedupe by driver+token: location tracking refreshes state.driver constantly.
+    const lastSyncedDeviceRef = useRef<string | null>(null);
+    useEffect(() => {
+        if (!deviceToken || !state.driver) {
+            return;
+        }
+
+        const syncKey = `${state.driver.id}:${deviceToken}`;
+        if (lastSyncedDeviceRef.current === syncKey) {
+            return;
+        }
+
+        lastSyncedDeviceRef.current = syncKey;
+        syncDevice(state.driver, deviceToken).catch((err) => {
+            // Allow retry on next driver/token change
+            lastSyncedDeviceRef.current = null;
+            console.warn('[AuthContext] Failed to sync device token:', err);
+        });
+    }, [deviceToken, state.driver]);
 
     // Memoize useful props and methods
     const value = useMemo(
