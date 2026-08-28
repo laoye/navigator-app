@@ -152,8 +152,10 @@ export default {
     CameraCapture: {
         gallery: '相册',
         loadingCameraOrAwaitingPermission: '正在加载摄像头或等待权限…',
+        noPhotosYet: '还没有照片，请先拍摄至少一张',
         photoAddedFromGallery: '已从相册添加照片',
         photoCaptured: '已拍摄照片',
+        photoCaptureFailed: '拍照失败，请重试',
         photos: '照片',
         snap: '拍摄',
     },
@@ -222,6 +224,11 @@ export default {
         qrValidateFailed: '无法识别二维码',
         signatureSaveFailed: '签名保存失败',
         photoUploadFailed: '照片上传失败',
+        photosFailedToProcess: '%{count} 张照片处理失败，已跳过',
+        chooseMethodTitle: '选择签收方式',
+        chooseMethodHint: '该活动未指定签收凭证类型，请选择要采集的凭证。',
+        methodPhoto: '拍照采集',
+        methodSignature: '手写签名',
     },
     DriverDashboardScreen: {
         activeOrders: '活动订单',

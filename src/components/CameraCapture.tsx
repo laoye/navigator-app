@@ -4,7 +4,6 @@ import { YStack, XStack, Button, Text, Image, Card, ScrollView } from 'tamagui';
 import { Camera, useCameraDevice, useFrameProcessor } from 'react-native-vision-camera';
 import type { Camera as CameraRef } from 'react-native-vision-camera';
 import { CameraRoll } from '@react-native-camera-roll/camera-roll';
-import RNFS from 'react-native-fs';
 import useDimensions from '../hooks/use-dimensions';
 import { toast, ToastPosition } from '../utils/toast';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -50,16 +49,13 @@ const CameraCapture = ({ onDone }: CameraCaptureScreenProps) => {
             });
             toast.info(t('CameraCapture.photoCaptured'), { position: ToastPosition.TOP });
 
+            // 只保留 uri：下游上传走 multipart，不消费 base64。
+            // 此前每张原图都完整读成 base64 存进 state，多张大图有 OOM 风险。
             const filePath = (Platform.OS === 'ios' ? '' : 'file://') + photo.path;
-            const base64Data = await RNFS.readFile(filePath, 'base64');
-            const newCapturedPhoto = {
-                uri: filePath,
-                base64: base64Data,
-            };
-
-            setPhotos((prev) => [...prev, newCapturedPhoto]);
+            setPhotos((prev) => [...prev, { uri: filePath }]);
         } catch (error) {
             console.warn('Error taking photo:', error);
+            toast.error(t('CameraCapture.photoCaptureFailed'));
         }
     }, [t]);
 
@@ -96,6 +92,10 @@ const CameraCapture = ({ onDone }: CameraCaptureScreenProps) => {
     };
 
     const handleDone = () => {
+        if (photos.length === 0) {
+            toast.error(t('CameraCapture.noPhotosYet'));
+            return;
+        }
         if (onDone) {
             onDone(photos);
         }

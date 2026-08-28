@@ -4,6 +4,26 @@ import { YStack, XStack, Text } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useHeaderHeight } from '@react-navigation/elements';
 
+interface CustomHeaderProps {
+    title?: string;
+    headerLeft?: any;
+    headerRight?: any;
+    headerStyle?: any;
+    headerRowStyle?: any;
+    headerLeftStyle?: any;
+    headerRightStyle?: any;
+    headerTitleAlign?: string;
+    headerTransparent?: boolean;
+    headerShadowVisible?: boolean;
+    backgroundColor?: string;
+    titleColor?: string;
+    headerRowProps?: any;
+    headerLeftProps?: any;
+    headerRightProps?: any;
+    titleProps?: any;
+    headerHeight?: number;
+}
+
 const CustomHeader = ({
     title = '',
     headerLeft,
@@ -22,7 +42,7 @@ const CustomHeader = ({
     headerRightProps = {},
     titleProps = {},
     headerHeight = 56,
-}) => {
+}: CustomHeaderProps) => {
     const insets = useSafeAreaInsets();
     const nativeHeaderHeight = useHeaderHeight();
 

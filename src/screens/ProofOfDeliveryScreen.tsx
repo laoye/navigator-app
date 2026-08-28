@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { Image, Text, YStack, XStack, Spinner, useTheme } from 'tamagui';
+import { Button, Image, Text, YStack, XStack, Spinner, useTheme } from 'tamagui';
 import { Order, Place } from '@fleetbase/sdk';
 import { titleize } from 'inflected';
 import { SectionHeader, SectionInfoLine } from '../components/Content';
@@ -28,13 +28,16 @@ const ProofOfDeliveryScreen = ({ route }) => {
     const { t } = useLanguage();
     const [isLoading, setIsLoading] = useState(false);
     const [loadingOverlayMessage, setLoadingOverlayMessage] = useState(t('ProofOfDeliveryScreen.capturing'));
+    // 活动未配置 pod_method 时（ForBox 强制 POD 拦截路径就不带这个字段），
+    // 由司机在兜底页自选采集方式；此前这里会渲染一块无返回按钮的纯白屏。
+    const [fallbackMethod, setFallbackMethod] = useState<'photo' | 'signature' | null>(null);
     const signatureScreenRef = useRef(null);
     const params = route.params ?? {};
     const activity = params.activity;
     const order = new Order(params.order, adapter);
     const waypoint = new Place(params.waypoint, adapter);
     const entity = params.entity;
-    const method = activity.pod_method;
+    const method = activity.pod_method ?? fallbackMethod;
     const isWaypointActivity = waypoint && typeof waypoint.getAttribute('tracking') === 'string' && waypoint.getAttribute('tracking').length;
     const subject = entity ?? (isWaypointActivity ? waypoint : order);
 
@@ -85,27 +88,37 @@ const ProofOfDeliveryScreen = ({ route }) => {
         async (photos = []) => {
             setIsLoading(true);
 
-            // Resize all photos first in parallel
-            const resizedPhotos = await Promise.all(
-                photos.map(async (p) => {
-                    const smallUri = await resizePhoto(p.uri);
-                    // const smallBase64 = await RNFS.readFile(smallUri, 'base64');
-                    // return { uri: smallUri, base64: smallBase64 };
-
-                    return { uri: smallUri };
-                })
-            );
-
-            const form = new FormData();
-            resizedPhotos.forEach((p, i) => {
-                form.append(`photos[${i}]`, {
-                    uri: p.uri,
-                    name: `photo-${i}.jpg`,
-                    type: 'image/jpeg',
-                });
-            });
-
             try {
+                // 逐张压缩：单张失败（低存储/文件被清理等）跳过并提示，
+                // 不能让一张坏图把全屏遮罩卡死到只能杀进程
+                const resizedPhotos = [];
+                let failedCount = 0;
+                for (const p of photos) {
+                    try {
+                        const smallUri = await resizePhoto(p.uri);
+                        resizedPhotos.push({ uri: smallUri });
+                    } catch (err) {
+                        failedCount++;
+                        console.warn('Error resizing proof photo:', err);
+                    }
+                }
+
+                if (failedCount > 0) {
+                    toast.error(t('ProofOfDeliveryScreen.photosFailedToProcess', { count: failedCount }));
+                }
+                if (resizedPhotos.length === 0) {
+                    return;
+                }
+
+                const form = new FormData();
+                resizedPhotos.forEach((p, i) => {
+                    form.append(`photos[${i}]`, {
+                        uri: p.uri,
+                        name: `photo-${i}.jpg`,
+                        type: 'image/jpeg',
+                    });
+                });
+
                 const proof = await adapter.post(`orders/${order.id}/capture-photo`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
                 setValue('proof', { proof, activity, order: order.id, waypoint: waypoint?.id, entity: entity?.id });
                 navigation.goBack();
@@ -161,7 +174,29 @@ const ProofOfDeliveryScreen = ({ route }) => {
         );
     }
 
-    return <YStack flex={1}></YStack>;
+    // 兜底：pod_method 未配置或未知。渲染可返回的选择页，让司机自选采集方式，
+    // 而不是一块连返回按钮都没有的白屏。
+    return (
+        <YStack bg='$background' flex={1}>
+            <CustomHeader headerTransparent={true} headerShadowVisible={false} headerLeft={<BackButton />} headerLeftStyle={{ paddingLeft: 10 }} />
+            <YStack flex={1} alignItems='center' justifyContent='center' px='$5' space='$4'>
+                <Text color='$textPrimary' fontSize='$6' fontWeight='bold' textAlign='center'>
+                    {t('ProofOfDeliveryScreen.chooseMethodTitle')}
+                </Text>
+                <Text color='$textSecondary' fontSize='$4' textAlign='center'>
+                    {t('ProofOfDeliveryScreen.chooseMethodHint')}
+                </Text>
+                <YStack width='100%' space='$3' mt='$3'>
+                    <Button size='$5' bg='$primary' onPress={() => setFallbackMethod('photo')}>
+                        <Button.Text color='white'>{t('ProofOfDeliveryScreen.methodPhoto')}</Button.Text>
+                    </Button>
+                    <Button size='$5' onPress={() => setFallbackMethod('signature')}>
+                        <Button.Text>{t('ProofOfDeliveryScreen.methodSignature')}</Button.Text>
+                    </Button>
+                </YStack>
+            </YStack>
+        </YStack>
+    );
 };
 
 export default ProofOfDeliveryScreen;

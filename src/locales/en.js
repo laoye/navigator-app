@@ -87,8 +87,10 @@ export default {
   CameraCapture: {
     gallery: 'Gallery',
     loadingCameraOrAwaitingPermission: 'Loading camera or awaiting permission...',
+    noPhotosYet: 'No photos yet. Take at least one photo first.',
     photoAddedFromGallery: 'Photo added from gallery.',
     photoCaptured: 'Photo captured.',
+    photoCaptureFailed: 'Failed to take photo. Please try again.',
     photos: 'Photos',
     snap: 'Snap',
   },
@@ -170,6 +172,11 @@ export default {
     qrValidateFailed: 'Unable to validate captured QR code.',
     signatureSaveFailed: 'Something went wrong saving the signature.',
     photoUploadFailed: 'Unable to upload captured photos.',
+    photosFailedToProcess: '%{count} photo(s) failed to process and were skipped',
+    chooseMethodTitle: 'Choose Proof Type',
+    chooseMethodHint: 'This activity does not specify a proof type. Choose what to capture.',
+    methodPhoto: 'Take Photos',
+    methodSignature: 'Capture Signature',
   },
   DriverDashboardScreen: {
     activeOrders: 'Active Orders',
