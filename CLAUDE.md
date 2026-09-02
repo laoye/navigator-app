@@ -107,7 +107,7 @@ Key env vars (see `.env.example`):
 
 ## Tech Stack
 
-- React Native 0.77 (New Architecture enabled)
+- React Native 0.84 (New Architecture enabled)
 - React Navigation 7 (static API)
 - Tamagui for styling/theming
 - `@fleetbase/sdk` for API
