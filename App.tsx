@@ -17,6 +17,7 @@ import { NotificationProvider } from './src/contexts/NotificationContext';
 import { ChatProvider } from './src/contexts/ChatContext';
 import { LocationProvider } from './src/contexts/LocationContext';
 import { ConfigProvider } from './src/contexts/ConfigContext';
+import { showLastFatalError } from './src/utils/fatal-error-trap';
 import config from './tamagui.config';
 
 function AppContent(): React.JSX.Element {
@@ -62,6 +63,11 @@ function AppContent(): React.JSX.Element {
 }
 
 function App(): React.JSX.Element {
+    React.useEffect(() => {
+        // 上次运行若因致命 JS 错误崩溃，启动后弹窗展示错误详情（fatal-error-trap 落的盘）
+        showLastFatalError();
+    }, []);
+
     return (
         <PortalProvider>
             <ThemeProvider>
