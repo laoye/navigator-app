@@ -333,6 +333,7 @@ export function getColorFromStatus(status) {
         case 'active':
         case 'completed':
         case 'order_completed':
+        case 'delivered':
         case 'pickup_ready':
             return 'green';
         case 'dispatched':

@@ -53,6 +53,7 @@ import {
     isPodSufficient,
     describeShortage,
 } from '../utils/forboxPod';
+import { isClosedOrderStatus } from '../utils/orderStatus';
 
 const getOrderDestination = (order, adapter) => {
     const pickup = order.getAttribute('payload.pickup');
@@ -95,9 +96,10 @@ const OrderScreen = ({ route }) => {
     const isAdhoc = order.getAttribute('adhoc') === true;
     const isIncomingAdhoc = isAdhoc && order.getAttribute('driver_assigned') === null;
     const isDriverAssigned = order.getAttribute('driver_assigned') !== null;
-    const isOrderPing = isDriverAssigned === false && isAdhoc === true && !['completed', 'canceled'].includes(order.getAttribute('status'));
-    const isNotStarted = order.isNotStarted && !order.isCanceled && !isOrderPing && order.getAttribute('status') !== 'completed';
-    const isNavigatable = (order.isDispatched || order.isInProgress) && !['completed', 'canceled'].includes(order.getAttribute('status')) && !isIncomingAdhoc;
+    const isOrderClosed = isClosedOrderStatus(order.getAttribute('status'));
+    const isOrderPing = isDriverAssigned === false && isAdhoc === true && !isOrderClosed;
+    const isNotStarted = order.isNotStarted && !order.isCanceled && !isOrderPing && !isOrderClosed;
+    const isNavigatable = (order.isDispatched || order.isInProgress) && !isOrderClosed && !isIncomingAdhoc;
     const isMultipleWaypointOrder = (order.getAttribute('payload.waypoints', []) ?? []).length > 0;
     const customFieldKeys = order.getAttribute('custom_fields', []) ?? [];
     const showLoadingOverlay = isLoading('activityUpdate');
@@ -371,7 +373,7 @@ const OrderScreen = ({ route }) => {
                 toast.success(`Order status updated to: ${activity._resolved_status ?? activity.status}`);
 
                 const currentDestination = getOrderDestination(updatedOrder, adapter);
-                const shouldNotifyUserDestinationChanged = activity.complete && updatedOrder.status !== 'completed' && previousDestination?.id !== currentDestination?.id;
+                const shouldNotifyUserDestinationChanged = activity.complete && !isClosedOrderStatus(updatedOrder.status) && previousDestination?.id !== currentDestination?.id;
                 if (shouldNotifyUserDestinationChanged) {
                     setPrevDest(previousDestination);
                     setCurrDest(currentDestination);
@@ -674,7 +676,7 @@ const OrderScreen = ({ route }) => {
                         <Separator />
                         <SectionInfoLine title={t('OrderScreen.totalDistance')} value={formatMeters(trackerData.total_distance)} />
                         <Separator />
-                        <SectionInfoLine title={t('OrderScreen.startTime')} value={trackerData.start_time ? '-' : trackerData.start_time} />
+                        <SectionInfoLine title={t('OrderScreen.startTime')} value={trackerData.start_time ? formatDate(new Date(trackerData.start_time), 'PP HH:mm') : '-'} />
                         <Separator />
                         <SectionInfoLine title={t('OrderScreen.currentEta')} value={trackerData.current_destination_eta === -1 ? t('OrderCard.nA') : formatDuration(trackerData.current_destination_eta)} />
                         <Separator />

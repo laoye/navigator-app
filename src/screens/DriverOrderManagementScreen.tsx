@@ -7,6 +7,7 @@ import { faInfoCircle, faClipboardList, faChevronRight } from '@fortawesome/free
 import { endOfYear, format, startOfYear, subDays } from 'date-fns';
 import { formatLocalized } from '../utils/dateFns';
 import { formatDuration, formatMeters } from '../utils/format';
+import { isInactiveOrderStatus } from '../utils/orderStatus';
 import { useOrderManager } from '../contexts/OrderManagerContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -71,7 +72,7 @@ const DriverOrderManagementScreen = () => {
     const startingDate = subDays(new Date(currentDate), 2);
     const datesWhitelist = [new Date(), { start: startOfYear(new Date()), end: endOfYear(new Date()) }];
     const todayString = formatLocalized(new Date(currentDate), 'EEEE');
-    const activeCurrentOrders = currentOrders.filter((order) => !['completed', 'created', 'canceled'].includes(order.getAttribute('status')));
+    const activeCurrentOrders = currentOrders.filter((order) => !isInactiveOrderStatus(order.getAttribute('status')));
     const stops = countStops(activeCurrentOrders);
     const distance = sumDistance(activeCurrentOrders);
     const duration = sumDuration(activeCurrentOrders);

@@ -6,6 +6,7 @@ import { useAuth } from './AuthContext';
 import useFleetbase from '../hooks/use-fleetbase';
 import useStorage from '../hooks/use-storage';
 import { isArray } from '../utils';
+import { isInactiveOrderStatus } from '../utils/orderStatus';
 
 function serializeCollection(collection) {
     return collection.map((resource) => resource.serialize());
@@ -65,12 +66,12 @@ export const OrderManagerProvider: React.FC = ({ children }) => {
     const ordersLoadError = useMemo(() => (Object.keys(ordersLoadErrors).length > 0 ? ordersLoadErrors : null), [ordersLoadErrors]);
 
     // Define statuses to exclude from active orders
-    const nonActiveOrderStatuses = useMemo(() => new Set(['completed', 'created', 'canceled', 'order_canceled']), []);
+    const isNonActiveOrder = useCallback((status) => isInactiveOrderStatus(status), []);
 
     // Derive active orders from all recent orders
     const recentActiveOrders = useMemo(() => {
-        return allRecentOrders.filter((order) => !nonActiveOrderStatuses.has(order.status));
-    }, [allRecentOrders, nonActiveOrderStatuses]);
+        return allRecentOrders.filter((order) => !isNonActiveOrder(order.status));
+    }, [allRecentOrders, isNonActiveOrder]);
 
     // Create a marked dates array for calendar strip from active orders
     const activeOrderMarkedDates = useMemo(() => {
