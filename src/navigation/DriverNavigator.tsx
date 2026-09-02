@@ -29,6 +29,7 @@ import DriverOrderManagementScreen from '../screens/DriverOrderManagementScreen'
 import OrderScreen from '../screens/OrderScreen';
 import EntityScreen from '../screens/EntityScreen';
 import ProofOfDeliveryScreen from '../screens/ProofOfDeliveryScreen';
+import OrderExceptionScreen from '../screens/OrderExceptionScreen';
 import DriverReportScreen from '../screens/DriverReportScreen';
 import CreateIssueScreen from '../screens/CreateIssueScreen';
 import EditIssueScreen from '../screens/EditIssueScreen';
@@ -296,6 +297,14 @@ const DriverTaskTab = createNativeStackNavigator({
                         headerTintColor: getTheme('borderColor'),
                     },
                     presentation: 'modal',
+                };
+            },
+        },
+        OrderException: {
+            screen: OrderExceptionScreen,
+            options: () => {
+                return {
+                    headerShown: false,
                 };
             },
         },

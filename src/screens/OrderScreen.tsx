@@ -332,13 +332,19 @@ const OrderScreen = ({ route }) => {
     }, [order]);
 
     const sendOrderActivityUpdate = useCallback(
-        async (activity, proof) => {
+        async (activity, proof, { exceptionReported = false } = {}) => {
             // 全流程统一 try/catch/finally：此前"跳 POD 采集"与"POD 计数校验"两条
             // 路径在 try 之外，前者返回后 loading 不清除，后者弱网 reject 时既无
             // 提示也不清 loading，都会让界面看起来卡住
             setActivityLoading(activity.code);
 
             try {
+                // 异常先留证据再推进：直接推进的话运营只看到一个 exception 状态、
+                // 不知道现场发生了什么，而 exception 的后继只有 canceled，救不回来
+                if (activity.code === 'exception' && !exceptionReported) {
+                    return navigation.navigate('OrderException', { activity, order: order.serialize() });
+                }
+
                 if (activity.require_pod && !proof) {
                     return navigation.navigate('ProofOfDelivery', { activity, order: order.serialize(), waypoint: destination.serialize() });
                 }
@@ -515,6 +521,23 @@ const OrderScreen = ({ route }) => {
             updateActivityWithProof(activity, proof);
         }
     }, [store.proof]);
+
+    useEffect(() => {
+        const updateActivityAfterExceptionReport = async (activity) => {
+            try {
+                await sendOrderActivityUpdate(activity, null, { exceptionReported: true });
+            } catch (err) {
+                console.warn('Error updating activity after exception report:', err);
+            } finally {
+                removeValue('exceptionReport');
+            }
+        };
+
+        if (store.exceptionReport) {
+            const { activity } = store.exceptionReport;
+            updateActivityAfterExceptionReport(activity);
+        }
+    }, [store.exceptionReport]);
 
     return (
         <YStack flex={1} bg='$background'>
