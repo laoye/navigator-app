@@ -68,9 +68,8 @@ const Badge = ({ status, color, inverted = false, icon, iconPlacement = 'left', 
             {iconPlacement === 'left' && iconElement}
             {status && (() => {
                 const key = `orderStatus.${normStatus(status)}`;
-                const translated = t(key);
-                // i18n 命中则用译文；否则 titleize 兜底
-                const label = translated !== key ? translated : titleize(status);
+                // i18n-js 未命中时返回 '[missing "..." translation]' 而非 key 本身，只能靠 defaultValue 兜底
+                const label = t(key, { defaultValue: titleize(status) });
                 return (
                     <Text color={text} fontWeight='bold' fontSize={fontSize} numberOfLines={numberOfLines}>
                         {label}
