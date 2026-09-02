@@ -31,6 +31,8 @@ const ProofOfDeliveryScreen = ({ route }) => {
     // 活动未配置 pod_method 时（ForBox 强制 POD 拦截路径就不带这个字段），
     // 由司机在兜底页自选采集方式；此前这里会渲染一块无返回按钮的纯白屏。
     const [fallbackMethod, setFallbackMethod] = useState<'photo' | 'signature' | null>(null);
+    // photo_and_signature 是串联采集：先拍照再签字，两步各产生一条 proof。
+    const [combinedStep, setCombinedStep] = useState<'photo' | 'signature'>('photo');
     const signatureScreenRef = useRef(null);
     const params = route.params ?? {};
     const activity = params.activity;
@@ -39,9 +41,14 @@ const ProofOfDeliveryScreen = ({ route }) => {
     const entity = params.entity;
     // 配置值必须是已知类型才采用——服务端可能给空串或未知值（?? 只挡 null/undefined），
     // 那种情况下选择页的按钮会点了不生效
-    const VALID_POD_METHODS = ['scan', 'photo', 'signature'];
-    const configuredMethod = activity?.pod_method;
-    const method = VALID_POD_METHODS.includes(configuredMethod) ? configuredMethod : fallbackMethod;
+    const VALID_POD_METHODS = ['scan', 'photo', 'signature', 'photo_and_signature'];
+    // 订单级 pod_method 优先于 activity.pod_method：前者是 ForBox 建单时按增值服务写入的业务
+    // 意图（photo / photo_and_signature），后者来自 OrderConfig 活动编辑器、默认值恒为 'scan'，
+    // 而 ForBox 包裹上没有 fleetbase 的 UUID 二维码，扫码必然校验失败。
+    const orderPodMethod = order.getAttribute('pod_required') ? order.getAttribute('pod_method') : null;
+    const configuredMethod = [orderPodMethod, activity?.pod_method].find((m) => VALID_POD_METHODS.includes(m));
+    const method = configuredMethod ?? fallbackMethod;
+    const isCombined = method === 'photo_and_signature';
     const isWaypointActivity = waypoint && typeof waypoint.getAttribute('tracking') === 'string' && waypoint.getAttribute('tracking').length;
     const subject = entity ?? (isWaypointActivity ? waypoint : order);
 
@@ -124,6 +131,15 @@ const ProofOfDeliveryScreen = ({ route }) => {
                 });
 
                 const proof = await adapter.post(`orders/${order.id}/capture-photo`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
+
+                // 串联模式下照片只是第一步：留在本屏进签字，不回传 proof 也不返回，
+                // 否则 OrderScreen 会以为凭证已齐并直接推进状态。
+                if (isCombined) {
+                    toast.success(t('ProofOfDeliveryScreen.photosSavedNowSign'));
+                    setCombinedStep('signature');
+                    return;
+                }
+
                 setValue('proof', { proof, activity, order: order.id, waypoint: waypoint?.id, entity: entity?.id });
                 navigation.goBack();
             } catch (err) {
@@ -133,7 +149,7 @@ const ProofOfDeliveryScreen = ({ route }) => {
                 setIsLoading(false);
             }
         },
-        [adapter, navigation]
+        [adapter, navigation, isCombined]
     );
 
     if (method === 'scan') {
@@ -146,7 +162,7 @@ const ProofOfDeliveryScreen = ({ route }) => {
         );
     }
 
-    if (method === 'photo') {
+    if (method === 'photo' || (isCombined && combinedStep === 'photo')) {
         return (
             <YStack bg='transparent' flex={1} position='relative'>
                 <LoadingOverlay visible={isLoading} text={loadingOverlayMessage} textColor={isDarkMode ? '$textPrimary' : '$white'} />
@@ -162,7 +178,7 @@ const ProofOfDeliveryScreen = ({ route }) => {
         );
     }
 
-    if (method === 'signature') {
+    if (method === 'signature' || (isCombined && combinedStep === 'signature')) {
         return (
             <YStack bg='$white' flex={1}>
                 <LoadingOverlay visible={isLoading} text={loadingOverlayMessage} textColor={isDarkMode ? '$textPrimary' : '$white'} />
