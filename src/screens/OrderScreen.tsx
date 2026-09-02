@@ -151,7 +151,9 @@ const OrderScreen = ({ route }) => {
             const pickup = restoreFleetbasePlace(order.getAttribute('payload.pickup'), adapter);
             const dropoff = restoreFleetbasePlace(order.getAttribute('payload.dropoff'), adapter);
 
-            return [pickup, dropoff];
+            // pickup/dropoff 可能为空（如商家自送单没有取件点），null 进列表会让
+            // CurrentDestinationSelect 渲染崩溃（2026-09-01 TestFlight 崩溃根因）
+            return [pickup, dropoff].filter(Boolean);
         }
 
         return waypoints
