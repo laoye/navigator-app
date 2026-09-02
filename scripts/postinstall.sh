@@ -12,6 +12,16 @@ if [ -f "$I18N_GRADLE" ]; then
   echo "Patched react-native-i18n for AGP 8+ compatibility"
 fi
 
+# --- react-native (iOS): void TurboModule 方法抛 NSException 时上游会在 TurboModule 线程
+# 调 convertNSExceptionToJSError 操作 JSI runtime，与 JS 线程并发写坏 Hermes 堆（2026-09-01
+# TestFlight 崩溃循环根因）。上游 performMethodInvocation 的异步分支已是原样重抛（见同文件
+# isSync 注释），此处对齐：记日志后重抛，让崩溃报告直接携带异常名称/原因/模块堆栈 ---
+RCT_TM="node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios/ReactCommon/RCTTurboModule.mm"
+if [ -f "$RCT_TM" ] && grep -qE '^ {6}throw convertNSExceptionToJSError\(runtime, exception, std::string\{moduleName\}, methodNameStr\);' "$RCT_TM"; then
+  perl -0pi -e 's/^ {6}throw convertNSExceptionToJSError\(runtime, exception, std::string\{moduleName\}, methodNameStr\);$/      NSLog(\@"[ForBox] TurboModule NSException in %s.%s: %\@ - %\@", moduleName, methodNameStr.c_str(), exception.name, exception.reason);\n      \@throw exception;/m' "$RCT_TM"
+  echo "Patched RCTTurboModule.mm: rethrow NSException in void method invocation (keeps exception info in crash report)"
+fi
+
 # --- react-native-notifications: Bridgeless mode compatibility ---
 FCM_TOKEN="node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/fcm/FcmToken.java"
 if [ -f "$FCM_TOKEN" ]; then
