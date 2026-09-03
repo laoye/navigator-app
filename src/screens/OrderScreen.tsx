@@ -13,7 +13,7 @@ import { formatDistance, add } from 'date-fns';
 import { formatLocalized as formatDate } from '../utils/dateFns';
 import { titleize } from 'inflected';
 import { formatCurrency, formatMeters, formatDuration, smartHumanize } from '../utils/format';
-import { restoreFleetbasePlace, getCoordinates } from '../utils/location';
+import { restoreFleetbasePlace, getCoordinates, formattedAddressFromPlace } from '../utils/location';
 import { toast } from '../utils/toast';
 import { userFacingError } from '../utils/error';
 import { config, showActionSheet } from '../utils';
@@ -182,12 +182,19 @@ const OrderScreen = ({ route }) => {
 
                 const app = availableApps[buttonIndex];
                 const destinationCoordinates = getCoordinates(destination);
+                // 商家端建的 Place 未做地理编码,坐标是占位的 (0,0)——直接传坐标
+                // 会把司机导到大西洋原点(地图显示 "(null)")。坐标无效时回退传
+                // 地址字符串,让地图 App 自己解析
+                const hasRealCoordinates =
+                    Array.isArray(destinationCoordinates) &&
+                    (Math.abs(destinationCoordinates[0] ?? 0) > 0.0001 || Math.abs(destinationCoordinates[1] ?? 0) > 0.0001);
+                const addressString = formattedAddressFromPlace(destination);
 
                 try {
-                    await LaunchNavigator.navigate(destinationCoordinates, {
+                    await LaunchNavigator.navigate(hasRealCoordinates ? destinationCoordinates : addressString, {
                         app,
                         launchMode: LaunchNavigator.LAUNCH_MODE.TURN_BY_TURN,
-                        destinationName: destination.getAttribute('name') ?? destination.getAttribute('street1'),
+                        destinationName: destination.getAttribute('name') ?? destination.getAttribute('street1') ?? addressString,
                     });
                 } catch (err) {
                     console.warn('Error launching navigation:', err);
