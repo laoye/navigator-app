@@ -9,6 +9,20 @@ import { isArray, isEmpty } from '../utils';
 import { lowercase } from '../utils/format';
 import { useLanguage } from '../contexts/LanguageContext';
 
+/**
+ * 拨打站点电话。
+ *
+ * 是 WaypointItem 的固有行为而非调用方职责：onCall 此前是必填 prop，但
+ * AdhocOrderCard / PastOrderCard / OrderActivitySelect 三处都没传，站点带
+ * 电话时号码会渲染成按钮，司机一点就 "undefined is not a function" 整个
+ * App 崩掉。给它一个默认实现，调用方仍可覆盖。
+ */
+export const callPhone = (phone?: string) => {
+    if (phone) {
+        Linking.openURL(`tel:${phone}`);
+    }
+};
+
 export const COLLAPSE_POINT = 2;
 export const CIRCLE_SIZE = 32;
 
@@ -40,13 +54,25 @@ export const WaypointCircle: React.FC<WaypointCircleProps> = ({
     </YStack>
 );
 
+// 组件早就在解构这些 prop，接口却只声明了一小半，于是「必填的 onCall 三个调用点
+// 都没传」这种错 TS 拦不住（报的是别的字段缺失，淹没在既有错误里）。补齐后同类
+// 问题才会在编译期暴露。
 interface WaypointItemProps {
-    index: number;
+    // 传了 icon 的调用方（卡片、活动弹窗）只显示一个图标圆圈，没有序号可言
+    index?: number;
     waypoint: any;
     title?: any;
+    titleStyle?: any;
     textStyle?: any;
-    onCall: (phone: string) => void;
+    onCall?: (phone: string) => void;
+    icon?: any;
+    iconColor?: any;
+    iconSize?: any;
     isLast?: boolean;
+    circleBackgroundColor?: any;
+    circleBorderColor?: any;
+    circleFontColor?: any;
+    children?: any;
 }
 export const WaypointItem: React.FC<WaypointItemProps> = ({
     index,
@@ -54,7 +80,7 @@ export const WaypointItem: React.FC<WaypointItemProps> = ({
     title,
     textStyle,
     titleStyle,
-    onCall,
+    onCall = callPhone,
     icon,
     iconColor,
     iconSize,
@@ -177,12 +203,6 @@ const OrderWaypointList: React.FC<OrderWaypointsProps> = ({ order, onPress, wrap
         return waypoints || [];
     };
 
-    const startCall = (phone: string) => {
-        if (phone) {
-            Linking.openURL(`tel:${phone}`);
-        }
-    };
-
     const toggleWaypointCollapse = () => {
         setIsWaypointsCollapsed((prev) => !prev);
     };
@@ -200,7 +220,7 @@ const OrderWaypointList: React.FC<OrderWaypointsProps> = ({ order, onPress, wrap
                     {payload && (
                         <YStack>
                             {firstWaypoint && (
-                                <WaypointItem index={1} waypoint={firstWaypoint} textStyle={textStyle} onCall={startCall}>
+                                <WaypointItem index={1} waypoint={firstWaypoint} textStyle={textStyle}>
                                     {typeof children === 'function' && children()}
                                 </WaypointItem>
                             )}
@@ -209,7 +229,7 @@ const OrderWaypointList: React.FC<OrderWaypointsProps> = ({ order, onPress, wrap
                             {isArray(middleWaypoints) &&
                                 middleWaypoints.length < COLLAPSE_POINT &&
                                 middleWaypoints.map((wp, i) => (
-                                    <WaypointItem key={i} index={i + 2} waypoint={wp} title={wp?.name} textStyle={textStyle} onCall={startCall}>
+                                    <WaypointItem key={i} index={i + 2} waypoint={wp} title={wp?.name} textStyle={textStyle}>
                                         {typeof children === 'function' && children()}
                                     </WaypointItem>
                                 ))}
@@ -219,7 +239,7 @@ const OrderWaypointList: React.FC<OrderWaypointsProps> = ({ order, onPress, wrap
                                     <WaypointCollapseButton isCollapsed={isWaypointsCollapsed} toggleCollapse={toggleWaypointCollapse} count={middleWaypoints.length} textStyle={textStyle} />
                                     <Collapsible collapsed={isWaypointsCollapsed}>
                                         {middleWaypoints.map((wp, i) => (
-                                            <WaypointItem key={i} index={i + 2} waypoint={wp} textStyle={textStyle} onCall={startCall}>
+                                            <WaypointItem key={i} index={i + 2} waypoint={wp} textStyle={textStyle}>
                                                 {typeof children === 'function' && children()}
                                             </WaypointItem>
                                         ))}
@@ -228,7 +248,7 @@ const OrderWaypointList: React.FC<OrderWaypointsProps> = ({ order, onPress, wrap
                             )}
 
                             {lastWaypoint && (
-                                <WaypointItem index={isArray(middleWaypoints) ? middleWaypoints.length + 2 : 2} waypoint={lastWaypoint} textStyle={textStyle} onCall={startCall} isLast>
+                                <WaypointItem index={isArray(middleWaypoints) ? middleWaypoints.length + 2 : 2} waypoint={lastWaypoint} textStyle={textStyle} isLast>
                                     {typeof children === 'function' && children()}
                                 </WaypointItem>
                             )}
