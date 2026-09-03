@@ -45,14 +45,29 @@ function useStorage<T>(key: string, defaultValue?: T): [T, (value: T) => void] {
     const currentValue = useSyncExternalStore(subscribe, getSnapshot);
 
     const setValue = useCallback(
-        (value: T) => {
-            if (value === undefined || value === null) {
+        (value: T | ((prev: T) => T)) => {
+            // 支持 React 惯用的函数式更新。此前不支持:传入的函数会被直接
+            // JSON.stringify(得到 undefined)塞给原生 MMKV,整 App 致命崩溃
+            // (2026-09-02 前台收推送必崩的根因,NotificationContext 的
+            // setNotifications(prev => ...) 触发)
+            const next = typeof value === 'function' ? (value as (prev: T) => T)(getSnapshot()) : value;
+
+            if (next === undefined || next === null) {
                 storage.delete(key);
-            } else {
-                storage.set(key, JSON.stringify(value));
+                return;
             }
+
+            const json = JSON.stringify(next);
+            // JSON.stringify 对函数/Symbol 返回 undefined,塞给原生会抛
+            // 类型错误且是致命级——宁可删键也不崩
+            if (json === undefined) {
+                storage.delete(key);
+                return;
+            }
+
+            storage.set(key, json);
         },
-        [key]
+        [key, getSnapshot]
     );
 
     return [currentValue, setValue];
@@ -74,10 +89,19 @@ const getArray = (key: string) => {
         return undefined;
     }
 };
-const setArray = (key: string, value: any[]) => storage.set(key, JSON.stringify(value));
+// stringify 可能返回 undefined(函数/Symbol/undefined),直塞原生是致命崩溃
+const safeSet = (key: string, value: any) => {
+    const json = JSON.stringify(value);
+    if (json === undefined) {
+        storage.delete(key);
+        return;
+    }
+    storage.set(key, json);
+};
+const setArray = (key: string, value: any[]) => safeSet(key, value);
 
 // Custom methods for setting, getting, removing, and clearing maps
-const set = (key: string, value: any) => storage.set(key, JSON.stringify(value));
+const set = (key: string, value: any) => safeSet(key, value);
 const get = (key: string) => {
     const value = storage.getString(key);
     if (value === undefined) return undefined;

@@ -39,7 +39,13 @@ export function getMap(key) {
 }
 
 export function set(key, value) {
-    storage.set(key, JSON.stringify(value));
+    const json = JSON.stringify(value);
+    // stringify 对函数/Symbol/undefined 返回 undefined,直塞原生 MMKV 是致命崩溃
+    if (json === undefined) {
+        storage.delete(key);
+        return;
+    }
+    storage.set(key, json);
 }
 
 export function setString(key, value) {
@@ -55,7 +61,7 @@ export function setBool(key, value) {
 }
 
 export function setArray(key, value) {
-    storage.set(key, JSON.stringify(value));
+    set(key, value);
 }
 
 export function setMap(key, value) {
