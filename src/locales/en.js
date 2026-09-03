@@ -435,6 +435,8 @@ export default {
     trackingNumber: 'Tracking Number',
     type: 'Type',
     updateActivity: 'Update Activity',
+    warehouseStopTitle: 'Warehouse Stop',
+    warehouseStopMessage: 'The ForBox warehouse stop is advanced by warehouse staff scanning. Switch your current destination back to the pickup or delivery address before updating the activity.',
     warning: 'Warning!',
     waypointCompleted: 'Waypoint Completed',
     waypointCompletedMessage: 'Waypoint activity completed for destination %{previous}. Your current destination is now %{current}. You can change the destination anytime by pressing the "Current Destination" button.',

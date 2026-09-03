@@ -16,10 +16,14 @@ const OrderPayloadEntities = ({ order, onPress }) => {
     const { t } = useLanguage();
     const waypoints = order.getAttribute('payload.waypoints', []) ?? [];
     const entities = order.getAttribute('payload.entities', []) ?? [];
-    const isMultiDropOrder = waypoints.length > 0;
+    const pickup = order.getAttribute('payload.pickup');
+    // 与上游 Payload::getIsMultipleDropOrderAttribute() 对齐：有 pickup 就仍是两点单。
+    // ForBox 的三段路线是「pickup + 中转仓 waypoint + dropoff」的混合形态，货物挂在订单
+    // 上而不是某一站（entity.destination 为空），按 waypoint 分组只会得到空列表。
+    const isMultiDropOrder = !pickup && waypoints.length > 0;
     const entitiesByDestination = useMemo(() => {
         // Return an empty array if there are no waypoints.
-        if (!waypoints || waypoints.length === 0) {
+        if (!isMultiDropOrder) {
             return [];
         }
 
@@ -38,7 +42,7 @@ const OrderPayloadEntities = ({ order, onPress }) => {
             }
             return groups;
         }, []);
-    }, [order, waypoints, entities]);
+    }, [order, waypoints, entities, isMultiDropOrder]);
 
     const handlePress = (entity, waypoint) => {
         if (typeof onPress === 'function') {

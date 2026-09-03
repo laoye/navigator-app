@@ -14,7 +14,7 @@ import Spacer from './Spacer';
 import useAppTheme from '../hooks/use-app-theme';
 import { useLanguage } from '../contexts/LanguageContext';
 
-const CurrentDestinationSelect = ({ onChange, destination, waypoints = [], snapTo = '100%', isLoading = false, ...props }) => {
+const CurrentDestinationSelect = ({ onChange, destination, waypoints = [] as any[], snapTo = '100%', isLoading = false, ...props }) => {
     const { isDarkMode } = useAppTheme();
     const theme = useTheme();
     const navigation = useNavigation();

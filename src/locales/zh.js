@@ -436,6 +436,8 @@ export default {
         trackingNumber: '运单号',
         type: '类型',
         updateActivity: '更新状态',
+        warehouseStopTitle: '中转仓',
+        warehouseStopMessage: '中转仓的入库/出库由仓管扫码推进。请先把当前目的地切回取件地址或收件地址，再更新状态。',
         warning: '提示！',
         waypointCompleted: '该地点已完成',
         waypointCompletedMessage: '已完成 %{previous} 的航点活动。当前目的地已变更为 %{current}。可点击"当前目的地"随时更改。',

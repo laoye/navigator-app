@@ -43,6 +43,7 @@ export const WaypointCircle: React.FC<WaypointCircleProps> = ({
 interface WaypointItemProps {
     index: number;
     waypoint: any;
+    title?: any;
     textStyle?: any;
     onCall: (phone: string) => void;
     isLast?: boolean;
@@ -204,10 +205,11 @@ const OrderWaypointList: React.FC<OrderWaypointsProps> = ({ order, onPress, wrap
                                 </WaypointItem>
                             )}
 
+                            {/* 中间站带上名称：ForBox 的中转仓夹在商家和客户之间，光有地址司机分不清那一行是什么 */}
                             {isArray(middleWaypoints) &&
                                 middleWaypoints.length < COLLAPSE_POINT &&
                                 middleWaypoints.map((wp, i) => (
-                                    <WaypointItem key={i} index={i + 2} waypoint={wp} textStyle={textStyle} onCall={startCall}>
+                                    <WaypointItem key={i} index={i + 2} waypoint={wp} title={wp?.name} textStyle={textStyle} onCall={startCall}>
                                         {typeof children === 'function' && children()}
                                     </WaypointItem>
                                 ))}

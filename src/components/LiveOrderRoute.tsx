@@ -100,8 +100,13 @@ const LiveOrderRoute = ({
     const origin = getPlaceCoords(start);
     const destination = getPlaceCoords(end);
 
-    // Get only the "middle" waypoints (excluding the first and last ones)
-    const middleWaypoints = focusCurrentDestination ? [] : waypoints.slice(1, -1).map((waypoint) => ({ coordinate: getPlaceCoords(waypoint), ...waypoint }));
+    // Get only the "middle" waypoints (excluding the first and last ones).
+    // 纯多点单里首尾两站就藏在 waypoints 里，要切掉；而当订单同时有 pickup/dropoff
+    // （ForBox 的「商家 → 中转仓 → 客户」），waypoints 本身全是中间站，slice 掉首尾会
+    // 把唯一的中转仓也抹掉，地图上就少一个点。
+    const hasSeparateEnds = Boolean(pickup) && Boolean(dropoff);
+    const betweenWaypoints = hasSeparateEnds ? waypoints : waypoints.slice(1, -1);
+    const middleWaypoints = focusCurrentDestination ? [] : betweenWaypoints.map((waypoint) => ({ coordinate: getPlaceCoords(waypoint), ...waypoint }));
 
     // Adjust marker size if a bunch of middle waypoints
     markerSize = middleWaypoints.length > 0 ? (middleWaypoints > 3 ? 'xxs' : 'xs') : markerSize;

@@ -101,7 +101,10 @@ const OrderScreen = ({ route }) => {
     const isOrderPing = isDriverAssigned === false && isAdhoc === true && !isOrderClosed;
     const isNotStarted = order.isNotStarted && !order.isCanceled && !isOrderPing && !isOrderClosed;
     const isNavigatable = (order.isDispatched || order.isInProgress) && !isOrderClosed && !isIncomingAdhoc;
-    const isMultipleWaypointOrder = (order.getAttribute('payload.waypoints', []) ?? []).length > 0;
+    // 与上游 Payload::getIsMultipleDropOrderAttribute() 对齐：有 pickup 就仍是两点单。
+    // ForBox 的「商家 → 中转仓 → 客户」保留了 pickup/dropoff，地图应继续画全程路线
+    // 而不是切成「司机位置 → 当前目的地」的单段视图。
+    const isMultipleWaypointOrder = !order.getAttribute('payload.pickup') && (order.getAttribute('payload.waypoints', []) ?? []).length > 0;
     const customFieldKeys = order.getAttribute('custom_fields', []) ?? [];
     const showLoadingOverlay = isLoading('activityUpdate');
     // Alert destination changed state
@@ -150,22 +153,52 @@ const OrderScreen = ({ route }) => {
         const waypoints = order.getAttribute('payload.waypoints', []) ?? [];
         const statusesToSkip = ['completed', 'canceled'];
 
-        if (waypoints.length === 0) {
-            const pickup = restoreFleetbasePlace(order.getAttribute('payload.pickup'), adapter);
-            const dropoff = restoreFleetbasePlace(order.getAttribute('payload.dropoff'), adapter);
+        // 中间站过滤掉已完成/已取消的；没有 tracking 的一站要保留而不是丢掉，
+        // 否则手工补的站点（如 ForBox 中转仓）会整站消失
+        const activeWaypoints = waypoints.filter((waypoint) => {
+            const tracking = waypoint?.tracking;
+            return !tracking || !statusesToSkip.includes(tracking.toLowerCase());
+        });
 
-            // pickup/dropoff 可能为空（如商家自送单没有取件点），null 进列表会让
-            // CurrentDestinationSelect 渲染崩溃（2026-09-01 TestFlight 崩溃根因）
-            return [pickup, dropoff].filter(Boolean);
+        // pickup + 中间站 + dropoff：与 getOrderDestination 的 locations 保持同一套顺序。
+        // 上游把 pickup/dropoff 和 waypoints 当互斥处理，一旦订单两者兼有（ForBox 的
+        // 「商家 → 中转仓 → 客户」），只返回 waypoints 会让司机在目的地选择里
+        // 看不到起点和终点。
+        // pickup/dropoff 可能为空（如商家自送单没有取件点），null 进列表会让
+        // CurrentDestinationSelect 渲染崩溃（2026-09-01 TestFlight 崩溃根因）
+        return [order.getAttribute('payload.pickup'), ...activeWaypoints, order.getAttribute('payload.dropoff')]
+            .filter(Boolean)
+            .map((place) => restoreFleetbasePlace(place, adapter))
+            .filter(Boolean);
+    }, [order, adapter]);
+
+    // 后端 OrderTracker 在两点单分支里只在 pickup / dropoff 之间切
+    // （fleetops OrderTracker::getCurrentDestination），中转仓永远不会出现在 trackerData 里。
+    // 这里按 payload.current_waypoint 自己在完整站点序列上定位，保证这两行跟司机
+    // 实际该去的站一致；定位不到时退回后端给的值。
+    const [currentStopAddress, nextStopAddress] = useMemo(() => {
+        const currentId = destination?.getAttribute('id');
+        const index = currentId ? waypointsInProgress.findIndex((stop) => stop?.getAttribute('id') === currentId) : -1;
+
+        if (index === -1) {
+            return [trackerData.current_destination?.address, trackerData.next_destination?.address];
         }
 
-        return waypoints
-            .filter((waypoint) => {
-                // Ensure waypoint.tracking exists and isn't one of the skipped statuses.
-                return waypoint?.tracking && !statusesToSkip.includes(waypoint.tracking.toLowerCase());
-            })
-            .map((waypoint) => restoreFleetbasePlace(waypoint, adapter));
-    }, [order, adapter]);
+        return [
+            waypointsInProgress[index]?.getAttribute('address') ?? trackerData.current_destination?.address,
+            waypointsInProgress[index + 1]?.getAttribute('address') ?? trackerData.next_destination?.address,
+        ];
+    }, [waypointsInProgress, destination, trackerData]);
+
+    // 当前目的地是不是中转仓：三段路线里首尾是 pickup / dropoff，中间站只会是仓。
+    // 仓的入库/出库由仓管扫码推进，而两点单模式下后端推进活动只认订单状态、不认司机
+    // 停在哪一站，司机把目的地切到仓后再点更新会把订单直接推进到下一个状态。
+    const isWarehouseStop = useMemo(() => {
+        const waypoints = order.getAttribute('payload.waypoints', []) ?? [];
+        const currentId = destination?.getAttribute('id');
+
+        return Boolean(currentId) && waypoints.some((waypoint) => waypoint?.id === currentId);
+    }, [order, destination]);
 
     const startNavigation = useCallback(async () => {
         if (Platform.OS === 'android') {
@@ -338,6 +371,14 @@ const OrderScreen = ({ route }) => {
             toast.error(userFacingError(err, t));
         }
     }, [order]);
+
+    const handleUpdateActivityPress = useCallback(() => {
+        if (isWarehouseStop) {
+            return Alert.alert(t('OrderScreen.warehouseStopTitle'), t('OrderScreen.warehouseStopMessage'));
+        }
+
+        return updateOrderActivity();
+    }, [isWarehouseStop, updateOrderActivity, t]);
 
     const sendOrderActivityUpdate = useCallback(
         async (activity, proof, { exceptionReported = false } = {}) => {
@@ -639,7 +680,7 @@ const OrderScreen = ({ route }) => {
                             </Button>
                         )}
                         {order.isInProgress && (
-                            <Button onPress={() => updateOrderActivity()} bg='$success' borderWidth={1} borderColor='$successBorder'>
+                            <Button onPress={handleUpdateActivityPress} bg='$success' borderWidth={1} borderColor='$successBorder'>
                                 <Button.Icon>
                                     {isLoading('nextOrderActivity') ? <Spinner color='successText' /> : <FontAwesomeIcon icon={faPenToSquare} color={theme.infoText.val} />}
                                 </Button.Icon>
@@ -704,9 +745,9 @@ const OrderScreen = ({ route }) => {
                         />
                     </YStack>
                     <YStack pb='$3'>
-                        <SectionInfoLine title={t('OrderScreen.currentDestination')} value={trackerData.current_destination?.address} />
+                        <SectionInfoLine title={t('OrderScreen.currentDestination')} value={currentStopAddress} />
                         <Separator />
-                        <SectionInfoLine title={t('OrderScreen.nextDestination')} value={trackerData.next_destination?.address} />
+                        <SectionInfoLine title={t('OrderScreen.nextDestination')} value={nextStopAddress} />
                         <Separator />
                         <SectionInfoLine title={t('OrderScreen.totalDistance')} value={formatMeters(trackerData.total_distance)} />
                         <Separator />
