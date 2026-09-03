@@ -10,7 +10,31 @@
  */
 
 export const FORBOX_POD_REQUIRED_PHOTOS = 2;
-export const FORBOX_POD_REQUIRED_SIGNATURES = 1;
+
+/**
+ * 签字仅在购买了「本人签收」增值服务时才强制，未购买则不要求（服务端
+ * FBOrderObserver::enforcePodForStatus 就是这么判的，对应 config forbox.pod.*
+ * 的 signature_required_addon / required_signatures）。
+ *
+ * 这里曾无条件写死 1，导致没买该服务的订单服务端放行、App 端却拦住不让
+ * 推进，报「大件 POD 不足：签字 0/1」。
+ */
+export const FORBOX_POD_REQUIRED_SIGNATURES_ADDON = 1;
+
+/**
+ * 订单是否购买了「本人签收」增值服务。
+ * 与服务端 FBOrderObserver::requiresRecipientSignature 保持一致。
+ */
+export function requiresRecipientSignature(valueAddedOptions: unknown): boolean {
+    return Array.isArray(valueAddedOptions) && valueAddedOptions.includes('recipient_signature');
+}
+
+/**
+ * 该订单实际要求的签字数。
+ */
+export function requiredSignatures(requiresSignature: boolean): number {
+    return requiresSignature ? FORBOX_POD_REQUIRED_SIGNATURES_ADDON : 0;
+}
 
 export interface ProofRow {
     raw_data?: string | null;
@@ -66,20 +90,21 @@ export function shouldEnforceForboxPod(
     return true;
 }
 
-export function isPodSufficient(count: PodCount): boolean {
-    return count.photos >= FORBOX_POD_REQUIRED_PHOTOS && count.signatures >= FORBOX_POD_REQUIRED_SIGNATURES;
+export function isPodSufficient(count: PodCount, requiresSignature = false): boolean {
+    return count.photos >= FORBOX_POD_REQUIRED_PHOTOS && count.signatures >= requiredSignatures(requiresSignature);
 }
 
 /**
  * 用户友好的不足描述。例如："照片 1/2、签字 0/1"
  */
-export function describeShortage(count: PodCount): string {
+export function describeShortage(count: PodCount, requiresSignature = false): string {
     const parts: string[] = [];
+    const reqSigs = requiredSignatures(requiresSignature);
     if (count.photos < FORBOX_POD_REQUIRED_PHOTOS) {
         parts.push(`照片 ${count.photos}/${FORBOX_POD_REQUIRED_PHOTOS}`);
     }
-    if (count.signatures < FORBOX_POD_REQUIRED_SIGNATURES) {
-        parts.push(`签字 ${count.signatures}/${FORBOX_POD_REQUIRED_SIGNATURES}`);
+    if (count.signatures < reqSigs) {
+        parts.push(`签字 ${count.signatures}/${reqSigs}`);
     }
     return parts.join('、');
 }
@@ -100,6 +125,6 @@ export async function fetchOrderPodCount(adapter: any, orderId: string): Promise
     } catch (err) {
         // 网络错误时不强行拦截（让服务端 422 兜底）
         console.warn('[forboxPod] failed to fetch proofs:', err);
-        return { photos: FORBOX_POD_REQUIRED_PHOTOS, signatures: FORBOX_POD_REQUIRED_SIGNATURES };
+        return { photos: FORBOX_POD_REQUIRED_PHOTOS, signatures: FORBOX_POD_REQUIRED_SIGNATURES_ADDON };
     }
 }

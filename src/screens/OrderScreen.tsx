@@ -52,6 +52,7 @@ import {
     shouldEnforceForboxPod,
     isPodSufficient,
     describeShortage,
+    requiresRecipientSignature,
 } from '../utils/forboxPod';
 import { isClosedOrderStatus } from '../utils/orderStatus';
 
@@ -357,15 +358,18 @@ const OrderScreen = ({ route }) => {
                 }
 
                 // ForBox 大件订单强制 POD 客户端拦截：picked_up / delivered 推进时
-                // 必须 >= 2 张照片 + >= 1 签字（方式 B 送仓单豁免 picked_up）。
+                // 必须 >= 2 张照片（方式 B 送仓单豁免 picked_up）；签字只在买了
+                // 「本人签收」增值服务时才要求，与服务端 FBOrderObserver 同口径。
                 // 服务端 FBOrderObserver 会再做一次 422 兜底。
                 const targetCode = activity?.code;
                 const orderType = order.getAttribute('type');
-                const inboundMethod = order.getAttribute('meta')?.inbound_method;
+                const orderMeta = order.getAttribute('meta');
+                const inboundMethod = orderMeta?.inbound_method;
                 if (shouldEnforceForboxPod(orderType, targetCode, inboundMethod)) {
+                    const needsSignature = requiresRecipientSignature(orderMeta?.value_added_options);
                     const podCount = await fetchOrderPodCount(adapter, order.id);
-                    if (!isPodSufficient(podCount)) {
-                        toast.error(`大件 POD 不足：${describeShortage(podCount)}`);
+                    if (!isPodSufficient(podCount, needsSignature)) {
+                        toast.error(`大件 POD 不足：${describeShortage(podCount, needsSignature)}`);
                         return navigation.navigate('ProofOfDelivery', {
                             activity,
                             order: order.serialize(),
