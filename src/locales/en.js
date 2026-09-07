@@ -153,6 +153,9 @@ export default {
   DestinationChangedAlert: {
     continue: 'Continue',
     waypointCompleted: 'Waypoint Completed',
+    completedStop: 'Completed stop',
+    newDestination: 'New destination',
+    unknownAddress: 'No address',
   },
   DriverOrderManagementScreen: {
     dayOrders: '%{day} orders',

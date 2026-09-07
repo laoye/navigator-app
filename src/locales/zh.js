@@ -205,6 +205,9 @@ export default {
     DestinationChangedAlert: {
         continue: '继续',
         waypointCompleted: '该地点已完成',
+        completedStop: '已完成的站点',
+        newDestination: '新的目的地',
+        unknownAddress: '无地址',
     },
     DriverOrderManagementScreen: {
         dayOrders: '%{day} 的订单',
