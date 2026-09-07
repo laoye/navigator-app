@@ -21,6 +21,49 @@ function buildUrl(host: string, path: string): string {
     return `${String(host).replace(/\/$/, '')}${path}`;
 }
 
+export interface PodStageStatus {
+    required: { photos: number; signatures: number; scans: number };
+    actual: { photos: number; signatures: number; scans: number };
+    /** 方式 B 送仓单没有司机现场揽件，该点豁免 */
+    exempt: boolean;
+    satisfied: boolean;
+    /** 可直接展示的差额，如「照片 1/2」；满足时为 null */
+    shortage: string | null;
+}
+
+/**
+ * 查某单在某交接点还差什么凭证。
+ *
+ * 够不够只在服务端算 —— 此前 App 里有一份自己的计数逻辑、阈值还写死成 2 张，
+ * 运营在后台把要求改了 App 不知道，表现就是「App 说够了、后端 422 拦住」。
+ */
+export async function fetchPodStatus(
+    host: string,
+    token: string,
+    orderId: string,
+    stage: string
+): Promise<PodStageStatus | null> {
+    if (!host || !token || !orderId) {
+        return null;
+    }
+
+    const path = `/forbox/int/v1/orders/${encodeURIComponent(orderId)}/pod-status?stage=${encodeURIComponent(stage)}`;
+    const response = await fetch(buildUrl(host, path), {
+        headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    const body = await response.json().catch(() => ({}));
+
+    if (!response.ok || body.status !== 'ok') {
+        throw new Error(body.message ?? '无法获取凭证要求');
+    }
+
+    return body.data?.stages?.[stage] ?? null;
+}
+
 /**
  * 司机现场上报订单异常。只写证据（原因 + 照片），不定性、不计费、不改状态——
  * 状态由调用方随后走标准的活动推进改成 exception，定性留给运营在 ops 端做。

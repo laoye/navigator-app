@@ -18,6 +18,7 @@ import { toast } from '../utils/toast';
 import { userFacingError } from '../utils/error';
 import { config, showActionSheet } from '../utils';
 import { useAuth } from '../contexts/AuthContext';
+import { useConfig } from '../contexts/ConfigContext';
 import { useLocation } from '../contexts/LocationContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useOrderManager } from '../contexts/OrderManagerContext';
@@ -47,13 +48,8 @@ import Badge from '../components/Badge';
 import Spacer from '../components/Spacer';
 import BackButton from '../components/BackButton';
 import { SectionHeader, SectionInfoLine, ActionContainer } from '../components/Content';
-import {
-    fetchOrderPodCount,
-    shouldEnforceForboxPod,
-    isPodSufficient,
-    describeShortage,
-    requiresRecipientSignature,
-} from '../utils/forboxPod';
+import { shouldEnforceForboxPod } from '../utils/forboxPod';
+import { fetchPodStatus } from '../utils/forboxApi';
 import { isClosedOrderStatus } from '../utils/orderStatus';
 
 const getOrderDestination = (order, adapter) => {
@@ -75,7 +71,8 @@ const OrderScreen = ({ route }) => {
     const { t } = useLanguage();
     const { adapter } = useFleetbase();
     const { isDarkMode } = useAppTheme();
-    const { driver } = useAuth();
+    const { driver, authToken } = useAuth();
+    const { resolveConnectionConfig } = useConfig();
     const { location } = useLocation();
     const { listen } = useSocketClusterClient();
     const { runWithLoading, isLoading } = usePromiseWithLoading();
@@ -398,24 +395,33 @@ const OrderScreen = ({ route }) => {
                     return navigation.navigate('ProofOfDelivery', { activity, order: order.serialize(), waypoint: destination.serialize() });
                 }
 
-                // ForBox 大件订单强制 POD 客户端拦截：picked_up / delivered 推进时
-                // 必须 >= 2 张照片（方式 B 送仓单豁免 picked_up）；签字只在买了
-                // 「本人签收」增值服务时才要求，与服务端 FBOrderObserver 同口径。
-                // 服务端 FBOrderObserver 会再做一次 422 兜底。
+                // ForBox 交接点凭证拦截。要求由后台的凭证策略决定，够不够只在服务端
+                // 算一处 —— App 这边再算一遍，运营改了配置就会两边打架。
+                // 服务端 FBOrderObserver 仍会做一次 422 兜底。
                 const targetCode = activity?.code;
                 const orderType = order.getAttribute('type');
                 const orderMeta = order.getAttribute('meta');
                 const inboundMethod = orderMeta?.inbound_method;
                 if (shouldEnforceForboxPod(orderType, targetCode, inboundMethod)) {
-                    const needsSignature = requiresRecipientSignature(orderMeta?.value_added_options);
-                    const podCount = await fetchOrderPodCount(adapter, order.id);
-                    if (!isPodSufficient(podCount, needsSignature)) {
-                        toast.error(`大件 POD 不足：${describeShortage(podCount, needsSignature)}`);
-                        return navigation.navigate('ProofOfDelivery', {
-                            activity,
-                            order: order.serialize(),
-                            waypoint: destination?.serialize(),
-                        });
+                    try {
+                        const podStatus = await fetchPodStatus(
+                            resolveConnectionConfig('FLEETBASE_HOST'),
+                            authToken,
+                            order.id,
+                            targetCode
+                        );
+
+                        if (podStatus && !podStatus.satisfied) {
+                            toast.error(`凭证不足：${podStatus.shortage ?? ''}`);
+                            return navigation.navigate('ProofOfDelivery', {
+                                activity,
+                                order: order.serialize(),
+                                waypoint: destination?.serialize(),
+                            });
+                        }
+                    } catch (err) {
+                        // 查不到要求时不硬拦（可能只是网络抖动），让服务端 422 兜底
+                        console.warn('[forboxPod] failed to fetch pod status:', err);
                     }
                 }
 
