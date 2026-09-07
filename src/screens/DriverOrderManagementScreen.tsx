@@ -8,6 +8,7 @@ import { endOfYear, format, startOfYear, subDays } from 'date-fns';
 import { formatLocalized } from '../utils/dateFns';
 import { formatDuration, formatMeters } from '../utils/format';
 import { isInactiveOrderStatus } from '../utils/orderStatus';
+import { buildPickupSummary, countStops, sumDistance, sumDuration } from '../utils/order';
 import { useOrderManager } from '../contexts/OrderManagerContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -23,23 +24,6 @@ import Spacer from '../components/Spacer';
 import useStorage from '../hooks/use-storage';
 
 const isAndroid = Platform.OS === 'android';
-
-const countStops = (orders = []) =>
-    orders.reduce((total, order) => {
-        const { pickup, dropoff, waypoints = [] } = order.getAttribute('payload') || {};
-        const stops = [pickup, dropoff, ...waypoints].filter(Boolean);
-        return total + stops.length;
-    }, 0);
-
-const sumDuration = (orders = []) =>
-    orders.reduce((total, order) => {
-        return total + order.getAttribute('time');
-    }, 0);
-
-const sumDistance = (orders = []) =>
-    orders.reduce((total, order) => {
-        return total + order.getAttribute('distance');
-    }, 0);
 
 const REFRESH_NEARBY_ORDERS_MS = 6000 * 5; // 5 mins
 const REFRESH_ORDERS_MS = 6000 * 15; // 15 mins
@@ -154,23 +138,7 @@ const DriverOrderManagementScreen = () => {
         }, [listen, driver.id])
     );
 
-    const pickupSummary = useMemo(() => {
-        const TARGET_STATUSES = new Set(['dispatched', 'started']);
-        const locationIds = new Set<string>();
-        let orderCount = 0;
-        for (const order of allActiveOrders ?? []) {
-            const status = order.getAttribute('status');
-            if (!TARGET_STATUSES.has(status)) continue;
-            const meta = order.getAttribute('meta') ?? {};
-            if (meta.inbound_method === 'merchant_dropoff') continue;
-            const pickup = order.getAttribute('payload.pickup');
-            if (!pickup) continue;
-            const id = pickup.id ?? pickup.uuid ?? pickup.street1 ?? 'no-pickup';
-            locationIds.add(id);
-            orderCount++;
-        }
-        return { orders: orderCount, locations: locationIds.size };
-    }, [allActiveOrders]);
+    const pickupSummary = useMemo(() => buildPickupSummary(allActiveOrders), [allActiveOrders]);
 
     const handleOpenPickupChecklist = useCallback(() => {
         navigation.navigate('PickupChecklist');
@@ -254,19 +222,8 @@ const DriverOrderManagementScreen = () => {
                         py='$3'
                         space='$3'
                     >
-                        <XStack
-                            width={40}
-                            height={40}
-                            borderRadius='$3'
-                            bg={isDarkMode ? '$info' : '$blue-600'}
-                            alignItems='center'
-                            justifyContent='center'
-                        >
-                            <FontAwesomeIcon
-                                icon={faClipboardList}
-                                color={isDarkMode ? theme.textPrimary.val : theme.surface.val}
-                                size={18}
-                            />
+                        <XStack width={40} height={40} borderRadius='$3' bg={isDarkMode ? '$info' : '$blue-600'} alignItems='center' justifyContent='center'>
+                            <FontAwesomeIcon icon={faClipboardList} color={isDarkMode ? theme.textPrimary.val : theme.surface.val} size={18} />
                         </XStack>
                         <YStack flex={1}>
                             <Text color='$textPrimary' fontSize={15} fontWeight='700'>

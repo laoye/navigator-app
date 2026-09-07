@@ -52,10 +52,13 @@ const OdometerDigit = ({ digit, digitHeight = 30, duration = 300, digitStyle, di
  * an OdometerDigit for each.
  */
 const OdometerNumber = ({ value = 0, digitHeight = 30, duration = 300, containerStyle, digitStyle, digitWrapperStyle, digitContainerStyle }) => {
-    // No negative numbers
-    value = value ? 0 : value;
+    // 归一化:非数字(undefined/null/NaN)按 0 处理,负数夹到 0。
+    // 原本写的是 `value = value ? 0 : value`,意图是「不要负数」,但真值分支返回 0
+    // 让任何非零输入都被打成 0 —— 首页两个数字因此长期恒显示 0;undefined 还会
+    // 让 Math.floor 产出 NaN,拆成 ['N','a','N'] 后把 NaN 塞进 Animated.Value。
+    const safeValue = Number.isFinite(value) ? Math.max(0, value) : 0;
     // Convert numeric value to string, then to array of digits
-    const stringValue = String(Math.floor(value)); // ignoring decimals for simplicity
+    const stringValue = String(Math.floor(safeValue)); // ignoring decimals for simplicity
     const digits = stringValue.split('').map((d) => parseInt(d, 10));
 
     return (
