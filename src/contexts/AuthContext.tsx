@@ -186,11 +186,18 @@ export const AuthProvider = ({ children }) => {
             online = online === null ? !state.driver.isOnline : online;
 
             try {
-                const driver = await adapter.post(`drivers/${state.driver.id}/toggle-online`, { online });
+                dispatch({ type: 'START_UPDATE', driver: state.driver, isUpdating: true });
+                // adapter.post 返回的是原始 JSON(字段名是 `online`),不是 Driver 实例。
+                // 调用方解构 `isOnline` 只会拿到 undefined,必须先包成 Driver
+                // (`isOnline` 是 Driver 上的 getter,读的是 `online` 属性)。
+                const response = await adapter.post(`drivers/${state.driver.id}/toggle-online`, { online });
+                const driver = response instanceof Driver ? response : new Driver(response, adapter);
                 setDriver(driver);
+                dispatch({ type: 'END_UPDATE', driver, isUpdating: false });
 
                 return driver;
             } catch (err) {
+                dispatch({ type: 'END_UPDATE', driver: state.driver, isUpdating: false });
                 throw err;
             }
         },
