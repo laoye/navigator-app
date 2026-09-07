@@ -174,14 +174,32 @@ export function uniqueArray(array) {
 }
 
 export function getTheme(key = null) {
-    const themeName = getString(APP_THEME_KEY);
-    if (themeName) {
-        const targetTheme = themes[themeName];
-        if (targetTheme) {
-            return key ? targetTheme[key] : targetTheme;
-        }
+    // app_theme 有两条写入路径：首次启动 use-app-theme 用 setString 写裸串，
+    // 紧接着又用 useStorage 的 setter 覆盖一次，而后者会 JSON.stringify，
+    // 值就变成了带引号的 `"lightBlue"`。这里只做裸读会拿到带引号的名字，
+    // themes[...] 必然查不到，于是整个函数恒返回 {} —— 导航栏 headerStyle、
+    // toast 配色、useAppTheme 导出的取色等 40 多处全部静默失去主题色。
+    const raw = getString(APP_THEME_KEY);
+    if (!raw) {
+        return {};
     }
-    return {};
+
+    let themeName = raw;
+    try {
+        const parsed = JSON.parse(raw);
+        if (typeof parsed === 'string') {
+            themeName = parsed;
+        }
+    } catch {
+        // 已是裸值，原样使用
+    }
+
+    const targetTheme = themes[themeName];
+    if (!targetTheme) {
+        return {};
+    }
+
+    return key ? targetTheme[key] : targetTheme;
 }
 
 export function defaults(object, defs) {
