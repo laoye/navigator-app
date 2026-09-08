@@ -73,10 +73,18 @@ export const OrderManagerProvider: React.FC = ({ children }) => {
         return allRecentOrders.filter((order) => !isNonActiveOrder(order.status));
     }, [allRecentOrders, isNonActiveOrder]);
 
+    // 后端 `active=true` 的排除名单来自上游 fleetbase，认定终态是 `completed`，
+    // 漏掉了 ForBox 真正的终态 `delivered`（见 utils/orderStatus.ts）。已签收的单
+    // 会照样回来，把 tab 徽标、首页统计、「当前任务」和订单页的进行中列表全部污染。
+    // 缓存里保留服务端原样（updateStorageOrder 要按 id 更新），只在派生层过滤。
+    const activeOrders = useMemo(() => {
+        return allActiveOrders.filter((order) => !isNonActiveOrder(order.status));
+    }, [allActiveOrders, isNonActiveOrder]);
+
     // Create a marked dates array for calendar strip from active orders
     const activeOrderMarkedDates = useMemo(() => {
         // Group orders by formatted date string (e.g., "2025-03-06")
-        const ordersGroupedByDate = allActiveOrders.reduce((acc, order) => {
+        const ordersGroupedByDate = activeOrders.reduce((acc, order) => {
             const dateKey = format(new Date(order.created_at), 'yyyy-MM-dd');
             if (!acc[dateKey]) {
                 acc[dateKey] = [];
@@ -93,7 +101,7 @@ export const OrderManagerProvider: React.FC = ({ children }) => {
                 // You can optionally add selectedColor here if needed
             })),
         }));
-    }, [allActiveOrders, theme]);
+    }, [activeOrders, theme]);
 
     // Generic function to query orders from Fleetbase API
     const queryOrders = useCallback(
@@ -314,7 +322,7 @@ export const OrderManagerProvider: React.FC = ({ children }) => {
             setCurrentDate,
             allRecentOrders: restoreCollection(allRecentOrders, adapter),
             recentActiveOrders: restoreCollection(recentActiveOrders, adapter),
-            allActiveOrders: restoreCollection(allActiveOrders, adapter),
+            allActiveOrders: restoreCollection(activeOrders, adapter),
             ordersToday: restoreCollection(ordersToday, adapter),
             currentOrders: restoreCollection(currentOrders, adapter),
             nearbyOrders: restoreCollection(nearbyOrders, adapter),
@@ -339,6 +347,7 @@ export const OrderManagerProvider: React.FC = ({ children }) => {
             allRecentOrders,
             recentActiveOrders,
             allActiveOrders,
+            activeOrders,
             ordersToday,
             currentOrders,
             nearbyOrders,
