@@ -130,10 +130,14 @@ async function authedFetch<T>(host: string, path: string, init: RequestInit = {}
     const token = storage.getString('_warehouse_token');
     const cleanToken = token ? JSON.parse(token) : null;
 
+    // FormData 不能手写 Content-Type —— multipart 的 boundary 要由运行时补上，
+    // 写死 application/json 会让后端把整个 body 当 JSON 解析，字段全空
+    const isForm = typeof FormData !== 'undefined' && init.body instanceof FormData;
+
     const res = await fetch(joinUrl(host, path), {
         ...init,
         headers: {
-            'Content-Type': 'application/json',
+            ...(isForm ? {} : { 'Content-Type': 'application/json' }),
             Accept: 'application/json',
             ...(cleanToken ? { Authorization: `Bearer ${cleanToken}` } : {}),
             ...(init.headers ?? {}),
@@ -290,17 +294,51 @@ export function fetchOrderDetail(host: string, idOrPublicId: string) {
     );
 }
 
-export function scanIn(host: string, code: string, remarks?: string) {
+/**
+ * 交接照片。中转仓是责任转移点，货到仓 / 交给派送司机时的状态划清了各段责任。
+ * 要不要拍、拍几张由后台「凭证要求」配置，这里只负责传。
+ */
+export interface ScanPhoto {
+    uri: string;
+    type?: string;
+    name?: string;
+}
+
+function scanBody(fields: Record<string, string | undefined>, photos: ScanPhoto[]): string | FormData {
+    if (photos.length === 0) {
+        return JSON.stringify(fields);
+    }
+
+    const form = new FormData();
+
+    Object.entries(fields).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+            form.append(key, value);
+        }
+    });
+
+    photos.forEach((photo, i) => {
+        form.append('photos[]', {
+            uri: photo.uri,
+            type: photo.type ?? 'image/jpeg',
+            name: photo.name ?? `scan-${i + 1}.jpg`,
+        } as unknown as Blob);
+    });
+
+    return form;
+}
+
+export function scanIn(host: string, code: string, remarks?: string, photos: ScanPhoto[] = []) {
     return authedFetch<WarehouseScanResponse>(host, '/forbox/int/v1/forbox/warehouse/scan-in', {
         method: 'POST',
-        body: JSON.stringify({ code, remarks }),
+        body: scanBody({ code, remarks }, photos),
     });
 }
 
-export function scanOut(host: string, code: string) {
+export function scanOut(host: string, code: string, remarks?: string, photos: ScanPhoto[] = []) {
     return authedFetch<WarehouseScanResponse>(host, '/forbox/int/v1/forbox/warehouse/scan-out', {
         method: 'POST',
-        body: JSON.stringify({ code }),
+        body: scanBody({ code, remarks }, photos),
     });
 }
 

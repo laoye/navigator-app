@@ -552,6 +552,10 @@ export default {
   WarehouseScanScreen: {
     scanIn: 'Scan In',
     scanOut: 'Scan Out',
+    addPhoto: 'Add handoff photo',
+    takePhoto: 'Take photo',
+    choosePhoto: 'Choose from library',
+    photosSelected: '{{count}} photo(s) selected',
     trackingNumber: 'Tracking number',
     trackingPlaceholder: 'Enter tracking number',
     confirmScanIn: 'Confirm Inbound',

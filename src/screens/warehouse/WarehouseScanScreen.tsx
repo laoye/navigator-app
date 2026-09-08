@@ -3,12 +3,14 @@ import { Alert, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Input, Text, XStack, YStack, useTheme } from 'tamagui';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faCheck, faTimes, faRotateRight } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faTimes, faRotateRight, faCamera, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { toast } from '@backpackapp-io/react-native-toast';
 import { useConfig } from '../../contexts/ConfigContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import useAppTheme from '../../hooks/use-app-theme';
 import BarcodeScanner from '../../components/BarcodeScanner';
+import { showActionSheet } from '../../utils';
 import {
     enqueuePendingScan,
     loadPendingScans,
@@ -16,6 +18,7 @@ import {
     scanIn,
     scanOut,
     type PendingScan,
+    type ScanPhoto,
 } from '../../warehouse/warehouseApi';
 
 type ScanMode = 'scan-in' | 'scan-out';
@@ -49,18 +52,58 @@ const WarehouseScanScreen = () => {
     const [submitting, setSubmitting] = useState(false);
     const [recents, setRecents] = useState<RecentScan[]>([]);
     const [pending, setPending] = useState<PendingScan[]>([]);
+    // 交接照片。注意不进离线重试队列 —— 队列要序列化存本地，
+    // 图片留在那儿既占空间又可能已被系统清掉
+    const [photos, setPhotos] = useState<ScanPhoto[]>([]);
 
     useEffect(() => {
         setPending(loadPendingScans());
     }, []);
 
+    /**
+     * 加一张交接照片。与司机端头像同一套（react-native-image-picker），
+     * 拍完只留 uri，上传时由 warehouseApi 组装成 multipart。
+     */
+    const addPhoto = useCallback(() => {
+        const pick = (fromCamera: boolean) => {
+            const handler = fromCamera ? launchCamera : launchImageLibrary;
+            handler({ mediaType: 'photo', quality: 0.7 }, (response) => {
+                if (response.didCancel || response.errorCode) return;
+                const asset = response.assets?.[0];
+                if (!asset?.uri) return;
+                setPhotos((prev) => [
+                    ...prev,
+                    { uri: asset.uri as string, type: asset.type, name: asset.fileName ?? undefined },
+                ]);
+            });
+        };
+
+        showActionSheet({
+            title: t('WarehouseScanScreen.addPhoto'),
+            message: undefined,
+            destructiveButtonIndex: undefined,
+            options: [
+                t('WarehouseScanScreen.takePhoto'),
+                t('WarehouseScanScreen.choosePhoto'),
+                t('common.cancel'),
+            ],
+            cancelButtonIndex: 2,
+            onSelect: (index: number) => {
+                if (index === 0) pick(true);
+                else if (index === 1) pick(false);
+            },
+        });
+    }, [t]);
+
     const submitScan = useCallback(
-        async (mode: ScanMode, code: string) => {
+        async (mode: ScanMode, code: string, scanPhotos: ScanPhoto[] = []) => {
             const host = resolveConnectionConfig('FLEETBASE_HOST');
             if (!host) {
                 throw new Error(t('common.errors.fleetbaseHostNotConfigured'));
             }
-            return mode === 'scan-in' ? scanIn(String(host), code) : scanOut(String(host), code);
+            return mode === 'scan-in'
+                ? scanIn(String(host), code, undefined, scanPhotos)
+                : scanOut(String(host), code, undefined, scanPhotos);
         },
         [resolveConnectionConfig]
     );
@@ -71,7 +114,7 @@ const WarehouseScanScreen = () => {
             if (!trimmed) return;
             setSubmitting(true);
             try {
-                const res = await submitScan(scanMode, trimmed);
+                const res = await submitScan(scanMode, trimmed, photos);
                 const ok = res.status === 'ok';
                 const code = res.data?.tracking_number ?? trimmed;
                 const msg = ok
@@ -94,6 +137,7 @@ const WarehouseScanScreen = () => {
                 if (ok) {
                     toast.success(msg);
                     setCode('');
+                    setPhotos([]);
                 } else {
                     toast.error(msg);
                 }
@@ -237,6 +281,25 @@ const WarehouseScanScreen = () => {
                     placeholderTextColor={isDarkMode ? '$gray-500' : '$gray-400'}
                     editable={!submitting}
                 />
+                {/* 交接照片：要不要拍由后台「凭证要求」配置，这里始终提供入口 */}
+                <XStack alignItems='center' justifyContent='space-between' gap='$2'>
+                    <Button size='$3' flex={1} bg='$surface' onPress={addPhoto} disabled={submitting}>
+                        <XStack alignItems='center' gap='$2'>
+                            <FontAwesomeIcon icon={faCamera} size={14} color={isDarkMode ? '#e5e7eb' : '#374151'} />
+                            <Text fontSize='$2'>
+                                {photos.length > 0
+                                    ? t('WarehouseScanScreen.photosSelected', { count: photos.length })
+                                    : t('WarehouseScanScreen.addPhoto')}
+                            </Text>
+                        </XStack>
+                    </Button>
+                    {photos.length > 0 && (
+                        <Button size='$3' bg='$surface' onPress={() => setPhotos([])} disabled={submitting}>
+                            <FontAwesomeIcon icon={faTrash} size={14} color='#ef4444' />
+                        </Button>
+                    )}
+                </XStack>
+
                 <Button
                     size='$4'
                     onPress={handleSubmit}
