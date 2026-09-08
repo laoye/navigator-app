@@ -5,6 +5,7 @@ import { Order, Place } from '@fleetbase/sdk';
 import { titleize } from 'inflected';
 import { SectionHeader, SectionInfoLine } from '../components/Content';
 import { isNone, resizePhoto } from '../utils';
+import { captureProofLocation, appendProofContext } from '../utils/proofLocation';
 import { toast } from '../utils/toast';
 import { useTempStore } from '../contexts/TempStoreContext';
 import useDimensions from '../hooks/use-dimensions';
@@ -100,6 +101,11 @@ const ProofOfDeliveryScreen = ({ route }) => {
             setIsLoading(true);
 
             try {
+                // 定位与压缩并行：两件事互不依赖，串起来跑等于让司机白等一次 GPS 冷启动。
+                // 拿不到定位不影响上传（captureProofLocation 永不抛），服务端会在水印上
+                // 写明「位置不可用」——地库和室内仓库定位失败是常态。
+                const locationPromise = captureProofLocation();
+
                 // 逐张压缩：单张失败（低存储/文件被清理等）跳过并提示，
                 // 不能让一张坏图把全屏遮罩卡死到只能杀进程
                 const resizedPhotos = [];
@@ -129,6 +135,8 @@ const ProofOfDeliveryScreen = ({ route }) => {
                         type: 'image/jpeg',
                     });
                 });
+
+                appendProofContext(form, await locationPromise);
 
                 const proof = await adapter.post(`orders/${order.id}/capture-photo`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
 

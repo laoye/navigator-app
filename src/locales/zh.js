@@ -421,6 +421,8 @@ export default {
     },
     OrderProofOfDelivery: {
         noProofOfDeliveryCaptured: '未采集交付凭证。',
+        noLocation: '无定位',
+        backfilled: '运营补录',
     },
     OrderScreen: {
         acceptAdHocOrder: '接受临时订单？',

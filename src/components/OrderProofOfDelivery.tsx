@@ -53,6 +53,32 @@ const OrderProofOfDelivery = ({ order, subject }) => {
         setFullscreenImage(null);
     };
 
+    // 水印烧在像素里是给系统之外的人看的；这份结构化字段是同一份数据，
+    // 在 App 里可读、将来也能搜索导出，不必让人去眯眼看照片上的小字。
+    const renderStamp = (proof: any) => {
+        const stamp = proof.data?.watermark;
+
+        if (!stamp) {
+            return null;
+        }
+
+        if (stamp.source === 'ops_backfill') {
+            return (
+                <Text color='$textSecondary' fontSize='$1' textAlign='center'>
+                    {t('OrderProofOfDelivery.backfilled')}
+                </Text>
+            );
+        }
+
+        return (
+            <Text color='$textSecondary' fontSize='$1' textAlign='center'>
+                {stamp.location_available
+                    ? `${Number(stamp.latitude).toFixed(5)}, ${Number(stamp.longitude).toFixed(5)}`
+                    : t('OrderProofOfDelivery.noLocation')}
+            </Text>
+        );
+    };
+
     const renderProof = ({ item: proof }) => {
         return (
             <YStack px='$3' py='$2' width={PROOF_COLUMN_WIDTH}>
@@ -95,6 +121,7 @@ const OrderProofOfDelivery = ({ order, subject }) => {
                     <Text color='$textSecondary' fontSize='$2' textAlign='center'>
                         {format(proof.created_at, 'MMM d, y HH:mm')}
                     </Text>
+                    {renderStamp(proof)}
                 </YStack>
             </YStack>
         );

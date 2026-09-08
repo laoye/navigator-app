@@ -416,6 +416,8 @@ export default {
   },
   OrderProofOfDelivery: {
     noProofOfDeliveryCaptured: 'No Proof of Delivery Captured.',
+    noLocation: 'No location',
+    backfilled: 'Backfilled by ops',
   },
   OrderScreen: {
     acceptAdHocOrder: 'Accept Ad-Hoc order?',
